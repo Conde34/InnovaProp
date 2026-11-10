@@ -1,0 +1,150 @@
+
+/* NAVBAR GENERAL */
+.navbar-custom {
+  background: linear-gradient(to right, #344e5e, #414345);
+  min-height: 75px;
+  padding: 0;
+}
+
+.navbar-custom .container {
+  min-height: 75px;
+}
+
+/* LOGO */
+.navbar-logo {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  line-height: 1;
+  min-width: 150px;
+}
+
+.logo-title {
+  color: #ffa323;
+  font-size: 36px;
+  font-weight: 400;
+  letter-spacing: 2px;
+}
+
+.logo-subtitle {
+  color: #ffa323;
+  font-size: 8px;
+  letter-spacing: 7px;
+  margin-top: 5px;
+}
+
+/* NAVEGACIÓN */
+.navbar-custom .nav {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  padding: 0;
+}
+
+.navbar-custom .navegador {
+  color: white ;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 8px 0 ;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.navbar-custom .navegador:hover {
+  color: #ffa323 ;
+}
+
+
+/* SUBRAYADO */
+.navbar-custom .navegador::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background-color: #ffa323;
+  transition: width 0.3s ease;
+}
+
+
+
+/* HOVER */
+.navbar-custom .navegador:hover::after {
+  width: 100%;
+}
+
+
+.navbar-custom .navegador:hover::after,
+.navbar-custom .navegador.active::after {
+  width: 100%;
+}
+
+/* BOTÓN HAMBURGUESA */
+.navbar-custom .navbar-toggler {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 7px 10px;
+}
+
+.navbar-custom .navbar-toggler:focus {
+  box-shadow: none;
+}
+
+/* TABLETS Y CELULARES */
+@media (max-width: 991px) {
+
+  .navbar-custom {
+    padding: 10px 0;
+  }
+
+  .navbar-custom .container {
+    min-height: auto;
+  }
+
+  /* MENÚ DESPLEGABLE */
+  .navbar-custom .navbar-collapse {
+    width: 100%;
+    padding-top: 15px;
+  }
+
+  .navbar-custom .nav {
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+  }
+
+  .navbar-custom .navegador {
+    width: 100%;
+    text-align: center;
+    padding: 12px 0 ;
+  }
+
+  .navbar-custom .navegador::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .navbar-custom .navegador:hover::after,
+  .navbar-custom .navegador.active::after {
+    width: 50px;
+  }
+}
+
+/* CELULARES PEQUEÑOS */
+@media (max-width: 400px) {
+
+  .logo-title {
+    font-size: 30px;
+  }
+
+  .logo-subtitle {
+    font-size: 7px;
+    letter-spacing: 6px;
+  }
+
+  .navbar-logo {
+    min-width: auto;
+  }
+
+}
