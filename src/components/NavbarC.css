@@ -41,7 +41,7 @@
   padding: 0;
 }
 
-.navbar-custom .navegador {
+.navbar-custom .nav.link {
   color: white ;
   font-size: 15px;
   font-weight: 600;
@@ -50,33 +50,20 @@
   transition: color 0.3s ease;
 }
 
-.navbar-custom .navegador:hover {
+.navbar-custom .nav-link:hover {
   color: #ffa323 ;
-}
-
-
-/* SUBRAYADO */
-.navbar-custom .navegador::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 3px;
-  background-color: #ffa323;
-  transition: width 0.3s ease;
 }
 
 
 
 /* HOVER */
-.navbar-custom .navegador:hover::after {
+.navbar-custom .nav-link:hover::after {
   width: 100%;
 }
 
 
-.navbar-custom .navegador:hover::after,
-.navbar-custom .navegador.active::after {
+.navbar-custom .nav-link:hover::after,
+.navbar-custom .nav-link.active::after {
   width: 100%;
 }
 
