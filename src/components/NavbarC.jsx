@@ -20,21 +20,21 @@ const NavbarC = () => {
         {/* MENÚ */}
         <Navbar.Collapse id="menu-navbar">
           <Nav className="mx-auto">
-            <Nav.Link to="/" className="navegador">
+            <NavLink to="/" className="nav-link">
               Inicio
-            </Nav.Link>
+            </NavLink>
 
-            <Nav.Link to="/propiedades" className="navegador">
+            <NavLink to="/propiedades" className="nav-link">
               Propiedades
-            </Nav.Link>
+            </NavLink>
 
-            <Nav.Link to="/nosotros" className="navegador">
+            <NavLink to="/sobreNosotros" className="nav-link">
               Sobre Nosotros
-            </Nav.Link>
+            </NavLink>
 
-            <Nav.Link to="/contacto" className="navegador">
+            <NavLink to="/contacto" className="nav-link">
               Contacto
-            </Nav.Link>
+            </NavLink>
           </Nav>
         </Navbar.Collapse>
       </Container>
