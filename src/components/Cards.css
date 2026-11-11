@@ -1,0 +1,74 @@
+/* Tarjeta principal con fondo degradado y sombra base */
+.custom-property-card {
+  width: 18rem;
+  background: linear-gradient(145deg, #344e5e, #414345) !important;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+/* Animación de elevación al pasar el cursor (Hover) */
+.custom-property-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.5) !important;
+  border-color: rgba(255, 163, 35, 0.4);
+}
+
+/* Contenedor para recortar el zoom de la imagen */
+.card-img-container {
+  overflow: hidden;
+  height: 200px;
+}
+
+/* Imagen y su transición de zoom */
+.card-img-zoom {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+/* Efecto zoom en la imagen cuando el cursor está sobre la tarjeta */
+.custom-property-card:hover .card-img-zoom {
+  transform: scale(1.08);
+}
+
+/* Insignia / Badge de operación */
+.custom-badge {
+  background-color: #ffa323;
+  color: #1a232a;
+  font-weight: 700;
+}
+
+/* Descripción de la propiedad con texto claro y legible */
+.custom-description {
+  color: #e2e8f0;
+}
+
+/* Color del precio con alto contraste */
+.custom-price {
+  color: #ffa323;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Botón moderno "Ver Más" */
+
+.custom-btn {
+  background-color: #ffa323 !important; /* Forzamos el color naranja corporativo */
+  color: #1a232a !important;            /* Texto oscuro de alto contraste */
+  font-weight: 700 !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 0.6rem 1rem;
+  box-shadow: 0 4px 10px rgba(255, 163, 35, 0.4);
+  transition: all 0.2s ease-in-out;
+}
+
+/* Hover del botón para que resalte al pasar el cursor */
+.custom-btn:hover {
+  background-color: #ffb447 !important;
+  color: #000000 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(255, 163, 35, 0.6);
+}
