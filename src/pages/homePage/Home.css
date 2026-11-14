@@ -1,3 +1,17 @@
+.home-carousel .carousel-item img {
+  display: block;
+  width: 100%;
+  height: clamp(280px, 55vw, 600px);
+  object-fit: cover;
+  object-position: center;
+}
+
+@media (max-width: 576px) {
+  .home-carousel .carousel-item img {
+    height: 320px;
+  }
+}
+
 /* Contenedor principal de la paginación */
 .pagination-container {
   display: flex;

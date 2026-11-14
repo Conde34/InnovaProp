@@ -35,6 +35,14 @@ const NavbarC = () => {
             <NavLink to="/contacto" className="nav-link">
               Contacto
             </NavLink>
+
+            <NavLink to="/login" className="nav-link">
+              Login
+            </NavLink>
+
+            <NavLink to="/register" className="nav-link">
+              Register
+            </NavLink>
           </Nav>
         </Navbar.Collapse>
       </Container>
