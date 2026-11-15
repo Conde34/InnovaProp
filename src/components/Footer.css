@@ -1,0 +1,115 @@
+
+.footer {
+  background: linear-gradient(135deg, #344e5e, #414345);
+  color: white;
+  padding: 50px 0 15px;
+  margin-top: 50px;
+}
+
+/* LOGO */
+.footer-logo {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: white;
+}
+
+.footer-logo span {
+  color: #ffa323;
+}
+
+/* TITULOS */
+.footer h5 {
+  color: #ffa323;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* TEXTOS */
+.footer p {
+  color: white;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.footer p svg {
+  color: #ffa323;
+  margin-right: 8px;
+}
+
+/* REDES SOCIALES */
+.footer-social {
+  display: flex;
+  gap: 18px;
+}
+
+.footer-social a {
+  color: white;
+  font-size: 24px;
+  transition: 0.3s ease;
+}
+
+.footer-social a:hover {
+  color: #ffa323;
+  transform: translateY(-4px);
+}
+
+/* ENLACES */
+.footer-links {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-links li {
+  margin-bottom: 12px;
+}
+
+.footer-links a {
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  transition: 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #ffa323;
+  padding-left: 5px;
+}
+
+/* SEPARADOR */
+.footer hr {
+  border: none;
+  height: 1px;
+  background-color: #ffa323;
+  opacity: 0.5;
+  margin-top: 35px;
+}
+
+/* COPYRIGHT */
+.footer-bottom {
+  text-align: center;
+  padding-top: 10px;
+}
+
+.footer-bottom p {
+  margin-bottom: 0;
+  font-size: 13px;
+  color: white;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .footer {
+    padding: 35px 15px 15px;
+    text-align: center;
+  }
+
+  .footer-social {
+    justify-content: center;
+  }
+
+  .footer-links {
+    padding: 0;
+  }
+}
+
