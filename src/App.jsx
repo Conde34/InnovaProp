@@ -13,10 +13,8 @@ import NotFound from "./components/NotFound.jsx";
 import Unauthorized from "./components/Unauthorized.jsx";
 import Login from "./pages/login/Login.jsx";
 import Register from "./pages/register/Register.jsx";
-import UsersRoute from "./router/UsersRoute.jsx";
 import AdminRoute from "./router/AdminRoute.jsx";
 import "bootstrap/dist/css/bootstrap.min.css";
-
 
 const App = () => {
   return (
@@ -24,18 +22,15 @@ const App = () => {
       <BrowserRouter>
         <NavbarC />
         <Routes>
+          {/* Rutas públicas */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
-
-          {/* Rutas de usuario */}
-          <Route element={<UsersRoute />}>
-            <Route path="/propiedades" element={<Propiedades />} />
-            <Route path="/propiedades/:id" element={<DetallePropiedad />} />
-            <Route path="/sobreNosotros" element={<SobreNosotros />} />
-            <Route path="/contacto" element={<Contacto />} />
-          </Route>
+          <Route path="/propiedades" element={<Propiedades />} />
+          <Route path="/propiedades/:id" element={<DetallePropiedad />} />
+          <Route path="/sobreNosotros" element={<SobreNosotros />} />
+          <Route path="/contacto" element={<Contacto />} />
 
           {/* Rutas de admin */}
           <Route element={<AdminRoute />}>
