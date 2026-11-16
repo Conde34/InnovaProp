@@ -1,3 +1,4 @@
+import { getPropiedades } from "../../services/propiedadesService";
 import { Container, Row, Col } from "react-bootstrap";
 import Cards from "../../components/Cards";
 import { useEffect, useState } from "react";
@@ -374,8 +375,12 @@ const Home = () => {
   ];
 
   useEffect(() => {
-    localStorage.setItem("propiedades", JSON.stringify(casas));
-    setPropiedades(casas);
+    getPropiedades()
+      .then((datos) => {
+        localStorage.setItem("propiedades", JSON.stringify(datos));
+        setPropiedades(datos);
+      })
+      .catch((error) => console.error(error));
   }, []);
 
   // Lógica de Paginación
