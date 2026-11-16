@@ -412,8 +412,6 @@ const Home = () => {
                 titulo={propiedad.titulo}
                 tipo={propiedad.tipo}
                 operacion={propiedad.operacion}
-                precio={propiedad.precio}
-                moneda={propiedad.moneda}
                 ubicacion={propiedad.ubicacion}
                 descripcion={propiedad.descripcion}
                 imagen={propiedad.imagen}

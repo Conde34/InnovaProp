@@ -6,8 +6,6 @@ const Cards = ({
   titulo,
   tipo,
   operacion,
-  precio,
-  moneda,
   ubicacion,
   descripcion,
   imagen,
