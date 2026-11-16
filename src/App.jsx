@@ -1,18 +1,18 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Home from "./pages/homePage/Home.jsx";
-import SobreNosotros from "./pages/sobreNosotros/SobreNosotros.jsx";
-import Contacto from "./pages/contacto/Contacto.jsx";
-import DetallePropiedad from "./pages/detallePropiedad/DetallePropiedad.jsx";
-import PanelPropiedades from "./pages/panelPropiedades/PanelPropiedades.jsx";
-import PanelUsuario from "./pages/panelUsuario/PanelUsuario.jsx";
-import Dashboard from "./pages/dashboard/Dashboard.jsx";
-import Propiedades from "./pages/propiedades/Propiedades.jsx";
+import Home from "./pages/public/homePage/Home.jsx";
+import SobreNosotros from "./pages/admin/sobreNosotros/SobreNosotros.jsx";
+import Contacto from "./pages/public/contacto/Contacto.jsx";
+import DetallePropiedad from "./pages/public/detallePropiedad/DetallePropiedad.jsx";
+import PanelPropiedades from "./pages/admin/panelPropiedades/PanelPropiedades.jsx";
+import PanelUsuario from "./pages/admin/panelUsuario/PanelUsuario.jsx";
+import Dashboard from "./pages/admin/dashboard/Dashboard.jsx";
+import Propiedades from "./pages/public/propiedades/Propiedades.jsx";
 import NavbarC from "../src/components/NavbarC.jsx";
 import Footer from "../src/components/Footer.jsx";
 import NotFound from "./components/NotFound.jsx";
 import Unauthorized from "./components/Unauthorized.jsx";
-import Login from "./pages/login/Login.jsx";
-import Register from "./pages/register/Register.jsx";
+import Login from "./pages/public/login/Login.jsx";
+import Register from "./pages/admin/register/Register.jsx";
 import UsersRoute from "./router/UsersRoute.jsx";
 import AdminRoute from "./router/AdminRoute.jsx";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -43,7 +43,7 @@ const App = () => {
             <Route path="/admin/panelUsuarios" element={<PanelUsuario />} />
             <Route path="/admin/dashboard" element={<Dashboard />} />
           </Route>
-
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />

@@ -9,7 +9,7 @@ const AdminRoute = () => {
   }
 
   if (user.rol !== "admin") {
-    return <Navigate to="/propiedades" replace />;
+    return <Navigate to="/unauthorized" replace />;
   }
 
   return <Outlet />;

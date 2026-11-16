@@ -4,9 +4,7 @@ const PrivateRoute = () => {
 
     const permiso = true
 
-    return (
-    <div>PrivateRoute</div>
-  )
+    return permiso ? <Outlet /> : <Navigate to={'/'} replace/>
 }
 
 export default PrivateRoute

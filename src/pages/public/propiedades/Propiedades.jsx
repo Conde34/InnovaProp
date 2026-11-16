@@ -1,7 +1,7 @@
-import Cards from "../../components/Cards";
+import Cards from "../../../components/Cards";
 import { Container, Row, Col } from "react-bootstrap";
 import { useState, useEffect } from "react";
-import { casas } from "../../data/properties";
+import { casas } from "../../../data/properties";
 import "./Propiedades.css"
 
 const Propiedades = () => {

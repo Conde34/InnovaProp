@@ -13,16 +13,19 @@ const getInitialUser = () => {
 };
 
 const useAuthStore = create((set) => ({
+  //propiedades
   user: getInitialUser(),
   token: null,
+
+  //metodos
   login: (nuevoUser) => {
     localStorage.setItem('user', JSON.stringify(nuevoUser));
     set({ user: nuevoUser });
   },
   logout: () => {
     localStorage.removeItem('user');
-    set({ user: null });
-  },
-}));
+    set({ user: null })}
+
+  }));
 
 export default useAuthStore;

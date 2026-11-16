@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { casas } from "../../data/properties";
+import { casas } from "../../../data/properties";
 
 const DetallePropiedad = () => {
   const { id } = useParams();

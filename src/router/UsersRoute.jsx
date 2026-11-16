@@ -8,10 +8,6 @@ const UsersRoute = () => {
     return <Navigate to={"/login"} replace />;
   }
 
-  if (user.rol === "admin") {
-    return <Navigate to="/admin/dashboard" replace />;
-  }
-
   return <Outlet />;
 };
 
