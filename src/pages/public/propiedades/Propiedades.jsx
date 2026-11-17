@@ -1,15 +1,23 @@
 import Cards from "../../../components/Cards";
 import { Container, Row, Col } from "react-bootstrap";
 import { useState, useEffect } from "react";
-import { casas } from "../../../data/properties";
+import { getCasas } from "../../../data/properties";
 import "./Propiedades.css"
 
 const Propiedades = () => {
   const [propiedades, setPropiedades] = useState([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    localStorage.setItem("propiedades", JSON.stringify(casas));
-    setPropiedades(casas);
+    getCasas()
+      .then((casas) => {
+        localStorage.setItem("propiedades", JSON.stringify(casas));
+        setPropiedades(casas);
+      })
+      .catch((error) => {
+        console.error(error);
+        setError("No se pudieron cargar las propiedades.");
+      });
   }, []);
 
 
@@ -39,6 +47,7 @@ const Propiedades = () => {
   return (
     <div className="my-5">
       <Container>
+        {error && <p className="alert alert-danger" role="alert">{error}</p>}
         {/* Grilla con separación g-4 */}
         <Row className="g-4">
           {propiedadesVisibles.map((propiedad) => (

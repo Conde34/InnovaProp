@@ -1,9 +1,32 @@
 import { useParams } from "react-router-dom";
-import { casas } from "../../../data/properties";
+import { useEffect, useState } from "react";
+import { getCasas } from "../../../data/properties";
 
 const DetallePropiedad = () => {
   const { id } = useParams();
-  const propiedad = casas.find((casa) => String(casa.id) === id);
+  const [propiedad, setPropiedad] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    getCasas()
+      .then((casas) => {
+        setPropiedad(casas.find((casa) => String(casa.id) === id) || null);
+      })
+      .catch((error) => {
+        console.error(error);
+        setError("No se pudo cargar la propiedad.");
+      })
+      .finally(() => setCargando(false));
+  }, [id]);
+
+  if (cargando) {
+    return <main className="container my-5"><p>Cargando propiedad...</p></main>;
+  }
+
+  if (error) {
+    return <main className="container my-5"><p className="alert alert-danger" role="alert">{error}</p></main>;
+  }
 
   if (!propiedad) {
     return (
