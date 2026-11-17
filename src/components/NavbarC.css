@@ -135,3 +135,45 @@
   }
 
 }
+ /* Botón sólido (#ffa323) para Register y Cerrar sesión */
+.btn-auth-solid {
+  background-color: #ffa323;
+  color: #1e293b !important;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 6px;
+  border: 1.5px solid #ffa323;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-auth-solid:hover {
+  background-color: #e58e15;
+  border-color: #e58e15;
+  color: #0f172a !important;
+  transform: translateY(-1px);
+}
+
+/* Botón con borde (#ffa323) para Iniciar sesión */
+.btn-auth-outline {
+  background-color: transparent;
+  color: #ffa323 !important;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 6px;
+  border: 1.5px solid #ffa323;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.btn-auth-outline:hover {
+  background-color: rgba(255, 163, 35, 0.15);
+  color: #ffb54d !important;
+}
