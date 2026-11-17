@@ -7,8 +7,6 @@ const Cards = ({
   titulo,
   tipo,
   operacion,
-  precio,
-  moneda,
   ubicacion,
   descripcion,
   imagen,
@@ -28,7 +26,7 @@ const Cards = ({
       <Card.Body className="d-flex flex-column justify-content-between p-4">
         <div>
           <div className="d-flex justify-content-between align-items-center mb-2">
-            <span className="badge px-2 py-1 small fw-bold custom-badge">
+            <span className={`badge px-2 py-1 small fw-bold ${operacion === 'Venta' ? 'bg-success' : 'bg-primary'}`}>
               {operacion}
             </span>
             <span className="text-light small opacity-75">{tipo}</span>
@@ -44,14 +42,11 @@ const Cards = ({
             </Card.Text>
           )}
 
-          <div className="mb-3 small">
+          
             <div className="d-flex align-items-center text-light opacity-87 mb-1">
               <span>📍 {ubicacion}</span>
             </div>
-            <div className="fs-4 fw-bold mt-2 custom-price">
-              {precio} {moneda}
-            </div>
-          </div>
+     
         </div>
 
         <Link
