@@ -12,7 +12,7 @@ import Footer from "../src/components/Footer.jsx";
 import NotFound from "./components/NotFound.jsx";
 import Unauthorized from "./components/Unauthorized.jsx";
 import Login from "./pages/public/login/Login.jsx";
-import Register from "./pages/admin/register/Register.jsx";
+import Register from "./pages/public/register/Register.jsx";
 import UsersRoute from "./router/UsersRoute.jsx";
 import AdminRoute from "./router/AdminRoute.jsx";
 import "bootstrap/dist/css/bootstrap.min.css";
