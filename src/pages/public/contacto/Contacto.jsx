@@ -1,5 +1,4 @@
-<<<<<<< HEAD:src/pages/public/contacto/Contacto.jsx
-=======
+
 import { useState } from "react";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
@@ -80,7 +79,6 @@ const guardarConsulta = (valores) => {
     // Si el almacenamiento no está disponible, el formulario igual funciona.
   }
 };
->>>>>>> origin/main:src/pages/contacto/Contacto.jsx
 
 const Contacto = () => {
   const [valores, setValores] = useState(VALORES_INICIALES);
