@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import "./Cards.css"; // Importamos el archivo de estilos
 
 const Cards = ({
+  id,
   titulo,
   tipo,
   operacion,
@@ -49,7 +50,7 @@ const Cards = ({
         </div>
 
         <Link
-          to={`/detallePropiedad`}
+          to={`/propiedades/${id}`}
           className="btn fw-bold py-2 mt-2 text-uppercase text-center text-decoration-none custom-btn"
         >
           Ver Más
