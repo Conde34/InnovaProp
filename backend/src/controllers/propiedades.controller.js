@@ -1,0 +1,23 @@
+import * as propiedadesService from "../services/propiedades.service.js";
+
+export async function getAll(req, res, next) {
+  try {
+    const propiedades = await propiedadesService.findAll(req.query);
+    return res.status(200).json(propiedades);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function getById(req, res, next) {
+  try {
+    const propiedad = await propiedadesService.findById(req.params.id);
+    if (!propiedad) {
+      return res.status(404).json({ message: "Propiedad no encontrada" });
+    }
+
+    return res.status(200).json(propiedad);
+  } catch (error) {
+    return next(error);
+  }
+}
