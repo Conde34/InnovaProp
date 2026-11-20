@@ -2,49 +2,35 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FiMail, FiLock, FiLogIn, FiHome } from "react-icons/fi";
 import useAuthStore from "../../../store/useAuthStore";
+import { apiFetch } from "../../../services/api";
 import "./Login.css";
 
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuthStore();
 
-  const [user, setUser] = useState("");
+  const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const storedUsers = JSON.parse(localStorage.getItem("registeredUsers")) || [];
+    try {
+      const { user, token } = await apiFetch("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password: pass }),
+      });
+      login(user, token);
 
-    const defaultAdmins = [
-      { id: 1, nombre: "santi", password: "1234", rol: "admin" }
-    ];
-    const defaultClients = [
-      { id: 2, nombre: "toto", password: "1234", rol: "cliente" }
-    ];
-
-    const allUsers = [...defaultAdmins, ...defaultClients, ...storedUsers];
-
-    const foundUser = allUsers.find(
-      (u) =>
-        (u.nombre === user || u.email === user) &&
-        (u.pass === pass || u.password === pass)
-    );
-
-    if (foundUser) {
-      login(foundUser);
-
-      if (foundUser.rol === "admin") {
-        alert("Bienvenido administrador");
+      if (user.rol === "admin") {
         navigate("/admin/dashboard");
+      } else if (user.rol === "agente") {
+        navigate("/admin/panelPropiedades");
       } else {
-        alert("Bienvenido cliente");
         navigate("/propiedades");
       }
-    } else {
-      alert("Credenciales incorrectas");
-      setUser("");
-      setPass("");
+    } catch (error) {
+      alert(error.message || "Credenciales inválidas");
     }
   };
 
@@ -67,16 +53,16 @@ const Login = () => {
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="login-form">
           <div className="login-form-group">
-            <label htmlFor="mail">Usuario</label>
+            <label htmlFor="mail">Email</label>
             <div className="login-input-wrapper">
               <FiMail className="login-input-icon" size={18} />
               <input
                 id="mail"
-                type="text"
-                value={user}
-                onChange={(e) => setUser(e.target.value)}
-                placeholder="Ingresá tu usuario"
-                autoComplete="username"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Ingresá tu email"
+                autoComplete="email"
                 required
               />
             </div>

@@ -25,6 +25,67 @@ const SELECT_PROPIEDADES = `
     ON i.id_propiedad = p.id_propiedad AND i.es_principal = 1
 `;
 
+export async function findTipoIdByName(nombre) {
+  const [filas] = await pool.execute(
+    "SELECT id_tipo FROM tipos_propiedad WHERE nombre = ?",
+    [nombre]
+  );
+  return filas[0]?.id_tipo || null;
+}
+
+export async function findZonaIdByName(nombre) {
+  const [filas] = await pool.execute(
+    "SELECT id_zona FROM zonas WHERE nombre = ?",
+    [nombre]
+  );
+  return filas[0]?.id_zona || null;
+}
+
+export async function create(datos) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const [resultado] = await connection.execute(
+      `INSERT INTO propiedades
+        (titulo, descripcion, id_tipo, id_zona, operacion, precio, moneda, direccion,
+         ambientes, dormitorios, banos, superficie, estado, destacado, id_agente)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        datos.titulo,
+        datos.descripcion || null,
+        datos.id_tipo,
+        datos.id_zona,
+        datos.operacion,
+        datos.precio,
+        datos.moneda,
+        datos.direccion,
+        datos.ambientes,
+        datos.dormitorios,
+        datos.banos,
+        datos.superficie,
+        datos.estado,
+        datos.destacado,
+        datos.id_agente,
+      ]
+    );
+
+    if (datos.imagen) {
+      await connection.execute(
+        "INSERT INTO imagenes_propiedad (id_propiedad, url_imagen, es_principal) VALUES (?, ?, ?)",
+        [resultado.insertId, datos.imagen, true]
+      );
+    }
+
+    await connection.commit();
+    return resultado.insertId;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
 export async function findAll(filtros = {}) {
   const condiciones = [];
   const valores = [];

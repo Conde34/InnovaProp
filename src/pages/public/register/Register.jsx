@@ -1,72 +1,46 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FiUser, FiLock, FiUserPlus, FiHome } from "react-icons/fi";
+import { apiFetch } from "../../../services/api";
 import "./Register.css";
 
 const Register = () => {
   const navigate = useNavigate();
 
   const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const nombreLimpio = nombre.trim();
-
-    // 1. Validaciones básicas
-    if (!nombreLimpio) {
-      alert("Por favor ingresá un nombre de usuario.");
-      return;
-    }
 
     if (password !== confirmPassword) {
       alert("Las contraseñas no coinciden.");
       return;
     }
 
-    if (password.length < 4) {
-      alert("La contraseña debe tener al menos 4 caracteres.");
+    if (password.length < 8) {
+      alert("La contraseña debe tener al menos 8 caracteres.");
       return;
     }
 
-    // 2. Traemos los usuarios ya registrados de forma segura
-    let storedUsers = [];
     try {
-      const data = JSON.parse(localStorage.getItem("registeredUsers"));
-      if (Array.isArray(data)) storedUsers = data;
-    } catch {
-      storedUsers = [];
+      await apiFetch("/api/auth/register", {
+        method: "POST",
+        body: JSON.stringify({
+          nombre: nombre.trim(),
+          apellido: apellido.trim(),
+          email: email.trim(),
+          password,
+        }),
+      });
+      alert("¡Registro exitoso! Ahora podés iniciar sesión.");
+      navigate("/login");
+    } catch (error) {
+      alert(error.message || "No se pudo completar el registro.");
     }
-
-    // 3. Verificamos únicamente que el nombre de usuario no exista
-    const userExists =
-      storedUsers.some(
-        (u) => u.nombre && u.nombre.toLowerCase() === nombreLimpio.toLowerCase()
-      ) ||
-      nombreLimpio.toLowerCase() === "santi" ||
-      nombreLimpio.toLowerCase() === "toto";
-
-    if (userExists) {
-      alert("Ese nombre de usuario ya está registrado.");
-      return;
-    }
-
-    // 4. Creamos el nuevo usuario solo con nombre y contraseña (rol cliente)
-    const newUser = {
-      id: Date.now(),
-      nombre: nombreLimpio,
-      password: password,
-      rol: "cliente",
-    };
-
-    // 5. Guardamos en el localStorage
-    const updatedUsers = [...storedUsers, newUser];
-    localStorage.setItem("registeredUsers", JSON.stringify(updatedUsers));
-
-    alert("¡Registro exitoso! Ahora podés iniciar sesión.");
-    navigate("/login");
   };
 
   return (
@@ -88,7 +62,7 @@ const Register = () => {
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="register-form">
           <div className="register-form-group">
-            <label htmlFor="nombre">Nombre de usuario</label>
+            <label htmlFor="nombre">Nombre</label>
             <div className="register-input-wrapper">
               <FiUser className="register-input-icon" size={18} />
               <input
@@ -96,8 +70,40 @@ const Register = () => {
                 type="text"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
-                placeholder="Ingresá tu nombre de usuario"
-                autoComplete="username"
+                placeholder="Ingresá tu nombre"
+                autoComplete="given-name"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="register-form-group">
+            <label htmlFor="apellido">Apellido</label>
+            <div className="register-input-wrapper">
+              <FiUser className="register-input-icon" size={18} />
+              <input
+                id="apellido"
+                type="text"
+                value={apellido}
+                onChange={(e) => setApellido(e.target.value)}
+                placeholder="Ingresá tu apellido"
+                autoComplete="family-name"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="register-form-group">
+            <label htmlFor="email">Email</label>
+            <div className="register-input-wrapper">
+              <FiUser className="register-input-icon" size={18} />
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Ingresá tu email"
+                autoComplete="email"
                 required
               />
             </div>

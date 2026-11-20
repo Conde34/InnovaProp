@@ -1,5 +1,14 @@
 import * as propiedadesService from "../services/propiedades.service.js";
 
+export async function create(req, res, next) {
+  try {
+    const id = await propiedadesService.create(req.validatedBody, req.user.id);
+    return res.status(201).json({ id });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 export async function getAll(req, res, next) {
   try {
     const propiedades = await propiedadesService.findAll(req.query);

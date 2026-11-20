@@ -1,7 +1,12 @@
 import { create } from 'zustand';
 
-const getInitialUser = () => {
+const getInitialToken = () => {
   if (typeof window === 'undefined') return null;
+  return localStorage.getItem('token');
+};
+
+const getInitialUser = () => {
+  if (typeof window === 'undefined' || !localStorage.getItem('token')) return null;
 
   const storedUser = localStorage.getItem('user');
 
@@ -15,17 +20,20 @@ const getInitialUser = () => {
 const useAuthStore = create((set) => ({
   //propiedades
   user: getInitialUser(),
-  token: null,
+  token: getInitialToken(),
 
   //metodos
-  login: (nuevoUser) => {
+  login: (nuevoUser, token) => {
     localStorage.setItem('user', JSON.stringify(nuevoUser));
-    set({ user: nuevoUser });
+    localStorage.setItem('token', token);
+    set({ user: nuevoUser, token });
   },
   logout: () => {
     localStorage.removeItem('user');
-    set({ user: null })}
+    localStorage.removeItem('token');
+    set({ user: null, token: null });
+  }
 
-  }));
+}));
 
 export default useAuthStore;

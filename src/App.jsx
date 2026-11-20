@@ -37,9 +37,12 @@ const App = () => {
             <Route path="/propiedades/:id" element={<DetallePropiedad />} />
           </Route>
 
+          <Route element={<AdminRoute allowedRoles={["admin", "agente"]} />}>
+            <Route path="/admin/panelPropiedades" element={<PanelPropiedades />} />
+          </Route>
+
           {/* Rutas de admin */}
           <Route element={<AdminRoute />}>
-            <Route path="/admin/panelPropiedades" element={<PanelPropiedades />} />
             <Route path="/admin/panelUsuarios" element={<PanelUsuario />} />
             <Route path="/admin/dashboard" element={<Dashboard />} />
           </Route>

@@ -45,15 +45,25 @@ export const getCasas = async () => {
   return saveProperties(data.casas);
 };
 
-export const crearCasa = async (property) => {
-  const properties = await getCasas();
+export const crearCasa = async (property, propertiesActuales) => {
+  const properties = propertiesActuales ?? await getCasas();
   const nextId =
     properties.reduce(
       (highestId, item) => Math.max(highestId, Number(item.id) || 0),
       0,
     ) + 1;
+  const newProperty = { ...property, id: property.id ?? nextId };
+  const existingIndex = properties.findIndex(
+    (item) => String(item.id) === String(newProperty.id),
+  );
 
-  return saveProperties([...properties, { ...property, id: nextId }]);
+  if (existingIndex !== -1) {
+    return saveProperties(
+      properties.map((item, index) => index === existingIndex ? newProperty : item),
+    );
+  }
+
+  return saveProperties([...properties, newProperty]);
 };
 
 export const actualizarCasa = async (id, changes) => {

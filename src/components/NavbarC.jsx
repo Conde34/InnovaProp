@@ -43,6 +43,10 @@ const NavbarC = () => {
                   Usuarios
                 </NavLink>
               </>
+            ) : user?.rol === "agente" ? (
+              <NavLink to="/admin/panelPropiedades" className="nav-link">
+                Propiedades
+              </NavLink>
             ) : (
               <>
                 <NavLink to="/" className="nav-link">

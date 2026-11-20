@@ -21,6 +21,7 @@ import {
   eliminarCasa,
   getCasas,
 } from "../../../data/properties";
+import { crearPropiedad } from "../../../services/propiedadesService";
 import "./PanelPropiedades.css";
 
 const IMAGEN_PREDETERMINADA =
@@ -30,6 +31,7 @@ const FORMULARIO_VACIO = {
   titulo: "",
   tipo: "Casa",
   operacion: "Venta",
+  estado: "Disponible",
   precio: "",
   moneda: "USD",
   ubicacion: "Yerba Buena, Tucumán",
@@ -68,6 +70,7 @@ function crearFormulario(property) {
   return {
     ...FORMULARIO_VACIO,
     ...property,
+    estado: property.estado ?? (property.disponible === false ? "Reservada" : "Disponible"),
     precio: String(property.precio ?? ""),
     ambientes: String(property.ambientes ?? 0),
     dormitorios: String(property.dormitorios ?? 0),
@@ -171,13 +174,29 @@ const PanelPropiedades = () => {
       banos: Number(formulario.banos) || 0,
       superficie: Number(formulario.superficie) || 0,
       imagen: formulario.imagen.trim() || IMAGEN_PREDETERMINADA,
-      disponible: formulario.disponible ?? true,
+      estado: formulario.estado,
+      disponible: formulario.estado === "Disponible",
     };
 
     try {
-      const actualizadas = propiedadEditada === null
-        ? await crearCasa(datos)
-        : await actualizarCasa(propiedadEditada, datos);
+      let actualizadas;
+      if (propiedadEditada === null) {
+        const datosApi = { ...datos };
+        delete datosApi.disponible;
+        const creada = await crearPropiedad(datosApi);
+        const nuevaPropiedad = { ...datos, id: creada.id };
+        try {
+          actualizadas = await crearCasa(nuevaPropiedad, propiedades);
+        } catch (cacheError) {
+          setPropiedades((actuales) => [...actuales, nuevaPropiedad]);
+          setMensaje("La propiedad se guardó en la base de datos.");
+          setError(`No se pudo actualizar el caché local: ${cacheError.message}`);
+          limpiarFormulario();
+          return;
+        }
+      } else {
+        actualizadas = await actualizarCasa(propiedadEditada, datos);
+      }
 
       setPropiedades(actualizadas);
       setMensaje(
@@ -332,6 +351,20 @@ const PanelPropiedades = () => {
                   >
                     <option value="Venta">Venta</option>
                     <option value="Alquiler">Alquiler</option>
+                  </select>
+                </label>
+
+                <label className="properties-admin-field">
+                  <span>Estado</span>
+                  <select
+                    name="estado"
+                    value={formulario.estado}
+                    onChange={manejarCambio}
+                  >
+                    <option value="Disponible">Disponible</option>
+                    <option value="Reservada">Reservada</option>
+                    <option value="Vendida">Vendida</option>
+                    <option value="Alquilada">Alquilada</option>
                   </select>
                 </label>
 

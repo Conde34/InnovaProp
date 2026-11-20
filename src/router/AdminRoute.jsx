@@ -1,14 +1,14 @@
 import { Outlet, Navigate } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore";
 
-const AdminRoute = () => {
+const AdminRoute = ({ allowedRoles = ["admin"] }) => {
   const { user } = useAuthStore();
 
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  if (user.rol !== "admin") {
+  if (!allowedRoles.includes(user.rol)) {
     return <Navigate to="/unauthorized" replace />;
   }
 
