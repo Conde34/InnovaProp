@@ -1,69 +1,208 @@
-/* Tarjeta principal con fondo degradado y sombra base */
 .custom-property-card {
   width: 18rem;
-  background: linear-gradient(145deg, #344e5e, #414345) !important;
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-}
-
-/* Animación de elevación al pasar el cursor (Hover) */
-.custom-property-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.5) !important;
-  border-color: rgba(255, 163, 35, 0.4);
-}
-
-/* Contenedor para recortar el zoom de la imagen */
-.card-img-container {
   overflow: hidden;
-  height: 200px;
+  border: 1px solid rgb(255 255 255 / 9%) !important;
+  background: linear-gradient(155deg, #344e5e, #30363a 82%) !important;
+  color: #fff;
+  box-shadow: 0 12px 30px rgb(11 19 24 / 22%) !important;
+  transition:
+    transform 280ms ease,
+    box-shadow 280ms ease,
+    border-color 280ms ease;
 }
 
-/* Imagen y su transición de zoom */
+.custom-property-card:hover {
+  transform: translateY(-7px);
+  border-color: rgb(255 163 35 / 48%) !important;
+  box-shadow: 0 20px 38px rgb(11 19 24 / 32%) !important;
+}
+
+.card-img-container {
+  position: relative;
+  height: 224px;
+  overflow: hidden;
+  background: #293943;
+}
+
+.card-img-container::after {
+  position: absolute;
+  inset: 30% 0 0;
+  background: linear-gradient(180deg, transparent, rgb(20 30 37 / 54%));
+  content: "";
+  pointer-events: none;
+}
+
 .card-img-zoom {
-  height: 100%;
   width: 100%;
+  height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  transition: transform 650ms cubic-bezier(0.2, 0.75, 0.25, 1);
 }
 
-/* Efecto zoom en la imagen cuando el cursor está sobre la tarjeta */
 .custom-property-card:hover .card-img-zoom {
-  transform: scale(1.08);
+  transform: scale(1.055);
 }
 
-/* Insignia / Badge de operación */
-.custom-badge {
-  background-color: #ffa323;
-  color: #1a232a;
+.card-image-caption {
+  position: absolute;
+  z-index: 1;
+  right: 15px;
+  bottom: 13px;
+  color: rgb(255 255 255 / 84%);
+  font-size: 0.62rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+}
+
+.custom-property-card .card-body {
+  gap: 18px;
+  padding: 21px !important;
+}
+
+.card-property-tags {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.property-operation-badge {
+  display: inline-flex;
+  min-height: 27px;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.property-operation-sale {
+  border-color: rgb(255 163 35 / 32%);
+  background: rgb(255 163 35 / 13%);
+  color: #ffc267;
+}
+
+.property-operation-rent {
+  border-color: rgb(152 191 214 / 26%);
+  background: rgb(152 191 214 / 12%);
+  color: #c4deed;
+}
+
+.card-property-type {
+  overflow: hidden;
+  color: rgb(237 242 245 / 68%);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.custom-property-card .card-property-title {
+  display: -webkit-box;
+  overflow: hidden;
+  min-height: 48px;
+  margin: 0 0 10px;
+  color: #fff;
+  font-size: 1.13rem;
+  font-weight: 700;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.card-property-location {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 7px;
+  color: rgb(237 242 245 / 70%);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.card-property-location svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #ffa323;
+}
+
+.card-property-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 17px 0 13px;
+  padding: 12px 0;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+}
+
+.card-property-price > span {
+  color: rgb(237 242 245 / 58%);
+  font-size: 0.75rem;
+}
+
+.card-property-price strong {
+  color: #ffc267;
+  font-size: 1.2rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.card-property-price small {
+  margin-left: 5px;
+  color: rgb(255 194 103 / 74%);
+  font-size: 0.68rem;
   font-weight: 700;
 }
 
-/* Descripción de la propiedad con texto claro y legible */
-.custom-description {
-  color: #e2e8f0;
+.custom-property-card .custom-description {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: rgb(237 242 245 / 70%);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
-
-/* Botón moderno "Ver Más" */
-
-.custom-btn {
-  background-color: #ffa323 !important; /* Forzamos el color naranja corporativo */
-  color: #1a232a !important;            /* Texto oscuro de alto contraste */
-  font-weight: 700 !important;
-  border: none !important;
-  border-radius: 6px !important;
-  padding: 0.6rem 1rem;
-  box-shadow: 0 4px 10px rgba(255, 163, 35, 0.4);
-  transition: all 0.2s ease-in-out;
+.custom-property-card .custom-btn {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #ffa323 !important;
+  border-radius: 10px !important;
+  background: #ffa323 !important;
+  color: #263b48 !important;
+  font-size: 0.78rem;
+  font-weight: 750 !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 6px 15px rgb(255 163 35 / 20%);
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
 }
 
-/* Hover del botón para que resalte al pasar el cursor */
-.custom-btn:hover {
-  background-color: #ffb447 !important;
-  color: #000000 !important;
+.custom-property-card .custom-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(255, 163, 35, 0.6);
+  border-color: #ffb84d !important;
+  background: #ffb84d !important;
+  color: #263b48 !important;
+  box-shadow: 0 9px 18px rgb(255 163 35 / 30%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .custom-property-card,
+  .card-img-zoom,
+  .custom-property-card .custom-btn {
+    transition: none;
+  }
 }

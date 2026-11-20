@@ -1,5 +1,6 @@
 import Card from "react-bootstrap/Card";
 import { Link } from "react-router-dom";
+import { ArrowUpRight, MapPin } from "lucide-react";
 import "./Cards.css"; // Importamos el archivo de estilos
 
 const Cards = ({
@@ -7,6 +8,8 @@ const Cards = ({
   titulo,
   tipo,
   operacion,
+  precio,
+  moneda,
   ubicacion,
   descripcion,
   imagen,
@@ -20,40 +23,57 @@ const Cards = ({
             className="card-img-zoom"
             src={imagen}
             alt={titulo}
+            loading="lazy"
           />
+          <span className="card-image-caption">INNOVAPROP</span>
         </div>
       )}
-      <Card.Body className="d-flex flex-column justify-content-between p-4">
+      <Card.Body className="d-flex flex-column p-4">
         <div>
-          <div className="d-flex justify-content-between align-items-center mb-2">
-            <span className={`badge px-2 py-1 small fw-bold ${operacion === 'Venta' ? 'bg-success' : 'bg-primary'}`}>
+          <div className="card-property-tags">
+            <span
+              className={`property-operation-badge ${
+                operacion === "Venta" ? "property-operation-sale" : "property-operation-rent"
+              }`}
+            >
               {operacion}
             </span>
-            <span className="text-light small opacity-75">{tipo}</span>
+            <span className="card-property-type">{tipo}</span>
           </div>
 
-          <Card.Title className="fw-bold mb-2 text-white fs-5">
+          <Card.Title className="card-property-title fw-bold text-white">
             {titulo}
           </Card.Title>
 
+          <div className="card-property-location">
+            <MapPin size={15} />
+            <span>{ubicacion}</span>
+          </div>
+
+          {precio !== undefined && precio !== null && (
+            <div className="card-property-price">
+              <span>Precio</span>
+              <strong>
+                {new Intl.NumberFormat("es-AR", {
+                  maximumFractionDigits: 0,
+                }).format(Number(precio))}
+                <small>{moneda}</small>
+              </strong>
+            </div>
+          )}
+
           {descripcion && (
-            <Card.Text className="small mb-3 custom-description">
+            <Card.Text className="custom-description">
               {descripcion}
             </Card.Text>
           )}
-
-          
-            <div className="d-flex align-items-center text-light opacity-87 mb-1">
-              <span>📍 {ubicacion}</span>
-            </div>
-     
         </div>
 
         <Link
           to={`/propiedades/${id}`}
-          className="btn fw-bold py-2 mt-2 text-uppercase text-center text-decoration-none custom-btn"
+          className="btn fw-bold mt-auto text-center text-decoration-none custom-btn"
         >
-          Ver Más
+          Ver propiedad <ArrowUpRight size={17} />
         </Link>
       </Card.Body>
     </Card>
