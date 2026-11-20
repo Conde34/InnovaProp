@@ -6,6 +6,8 @@ import pool from "./config/db.js";
 import propiedadesRouter from "./routes/propiedades.routes.js";
 import consultasRouter from "./routes/consultas.routes.js";
 import authRouter from "./routes/auth.routes.js";
+import usuariosRouter from "./routes/usuarios.routes.js";
+import favoritosRouter from "./routes/favoritos.routes.js";
 import notFound from "./middlewares/not-found.middleware.js";
 import errorHandler from "./middlewares/error.middleware.js";
 
@@ -34,6 +36,8 @@ app.get("/api/health", async (_req, res, next) => {
 app.use("/api/propiedades", propiedadesRouter);
 app.use("/api/consultas", consultasRouter);
 app.use("/api/auth", authRateLimit, authRouter);
+app.use("/api/usuarios", usuariosRouter);
+app.use("/api/favoritos", favoritosRouter);
 app.use(notFound);
 app.use(errorHandler);
 

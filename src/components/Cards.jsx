@@ -1,6 +1,6 @@
 import Card from "react-bootstrap/Card";
-import { Link } from "react-router-dom";
-import { ArrowUpRight, MapPin } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { ArrowUpRight, Heart, MapPin } from "lucide-react";
 import "./Cards.css"; // Importamos el archivo de estilos
 
 const Cards = ({
@@ -13,7 +13,12 @@ const Cards = ({
   ubicacion,
   descripcion,
   imagen,
+  favorito = false,
+  favoritoEnProceso = false,
+  onAlternarFavorito,
 }) => {
+  const location = useLocation();
+
   return (
     <Card className="h-100 border-0 rounded-4 overflow-hidden shadow-lg custom-property-card">
       {imagen && (
@@ -39,6 +44,18 @@ const Cards = ({
               {operacion}
             </span>
             <span className="card-property-type">{tipo}</span>
+            {onAlternarFavorito && (
+              <button
+                className={`card-favorite-toggle${favorito ? " is-favorite" : ""}`}
+                type="button"
+                aria-label={favorito ? "Quitar de favoritos" : "Agregar a favoritos"}
+                aria-pressed={favorito}
+                disabled={favoritoEnProceso}
+                onClick={onAlternarFavorito}
+              >
+                <Heart size={17} fill={favorito ? "currentColor" : "none"} />
+              </button>
+            )}
           </div>
 
           <Card.Title className="card-property-title fw-bold text-white">
@@ -71,6 +88,7 @@ const Cards = ({
 
         <Link
           to={`/propiedades/${id}`}
+          state={{ from: `${location.pathname}${location.search}` }}
           className="btn fw-bold mt-auto text-center text-decoration-none custom-btn"
         >
           Ver propiedad <ArrowUpRight size={17} />

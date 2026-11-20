@@ -1,54 +1,22 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowUpRight,
+  Pencil,
+  Save,
   Search,
   ShieldCheck,
   Trash2,
   UserRound,
   UsersRound,
+  X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import {
+  actualizarUsuario,
+  eliminarUsuario,
+  listarUsuarios,
+} from "../../../services/usuariosService";
 import "./PanelUsuario.css";
-
-const STORAGE_KEY = "registeredUsers";
-
-const usuariosDePrueba = [
-  {
-    id: "demo-admin",
-    nombre: "Santi",
-    email: "",
-    rol: "admin",
-    esDemo: true,
-  },
-  {
-    id: "demo-cliente",
-    nombre: "Toto",
-    email: "",
-    rol: "cliente",
-    esDemo: true,
-  },
-];
-
-function leerUsuariosRegistrados() {
-  try {
-    const guardados = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    if (!Array.isArray(guardados)) return [];
-
-    return guardados
-      .filter((usuario) => usuario && typeof usuario.nombre === "string")
-      .map((usuario, index) => ({
-        id: usuario.id ?? `usuario-${index}`,
-        nombre: usuario.nombre,
-        email: typeof usuario.email === "string" ? usuario.email : "",
-        rol: ["admin", "agente", "cliente"].includes(usuario.rol)
-          ? usuario.rol
-          : "cliente",
-        esDemo: false,
-      }));
-  } catch {
-    return [];
-  }
-}
 
 const etiquetasRol = {
   admin: "Administrador",
@@ -56,28 +24,70 @@ const etiquetasRol = {
   cliente: "Cliente",
 };
 
+const FORMULARIO_VACIO = {
+  nombre: "",
+  apellido: "",
+  email: "",
+  telefono: "",
+  rol: "cliente",
+  activo: true,
+  password: "",
+};
+
 const PanelUsuario = () => {
-  const [usuariosRegistrados, setUsuariosRegistrados] = useState(
-    leerUsuariosRegistrados,
-  );
+  const [usuarios, setUsuarios] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [rolSeleccionado, setRolSeleccionado] = useState("todos");
+  const [usuarioEditado, setUsuarioEditado] = useState(null);
+  const [formulario, setFormulario] = useState({ ...FORMULARIO_VACIO });
+  const [cargando, setCargando] = useState(true);
+  const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
 
-  const usuarios = [...usuariosDePrueba, ...usuariosRegistrados];
-  const termino = busqueda.trim().toLocaleLowerCase("es");
-  const usuariosVisibles = usuarios.filter((usuario) => {
-    const coincideTexto =
-      !termino ||
-      `${usuario.nombre} ${usuario.email}`
-        .toLocaleLowerCase("es")
-        .includes(termino);
-    const coincideRol =
-      rolSeleccionado === "todos" || usuario.rol === rolSeleccionado;
+  useEffect(() => {
+    let activo = true;
 
-    return coincideTexto && coincideRol;
-  });
+    listarUsuarios()
+      .then((lista) => {
+        if (!Array.isArray(lista)) {
+          throw new Error("La respuesta de usuarios no tiene el formato esperado.");
+        }
+        if (activo) {
+          setUsuarios(lista.map((usuario) => ({
+            ...usuario,
+            activo: Boolean(usuario.activo),
+          })));
+        }
+      })
+      .catch((loadError) => {
+        if (activo) setError(loadError.message || "No se pudieron cargar los usuarios.");
+      })
+      .finally(() => {
+        if (activo) setCargando(false);
+      });
+
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  const termino = busqueda.trim().toLocaleLowerCase("es");
+  const usuariosVisibles = useMemo(
+    () =>
+      usuarios.filter((usuario) => {
+        const coincideTexto =
+          !termino ||
+          `${usuario.nombre} ${usuario.apellido} ${usuario.email}`
+            .toLocaleLowerCase("es")
+            .includes(termino);
+        const coincideRol =
+          rolSeleccionado === "todos" || usuario.rol === rolSeleccionado;
+
+        return coincideTexto && coincideRol;
+      }),
+    [usuarios, termino, rolSeleccionado],
+  );
 
   const cantidadClientes = usuarios.filter(
     (usuario) => usuario.rol === "cliente",
@@ -86,24 +96,90 @@ const PanelUsuario = () => {
     (usuario) => usuario.rol === "agente",
   ).length;
 
-  const eliminarUsuario = (usuario) => {
-    if (usuario.esDemo || usuario.rol !== "cliente") return;
-    if (!window.confirm(`¿Querés eliminar la cuenta de ${usuario.nombre}?`)) {
+  const abrirEdicion = (usuario) => {
+    setError("");
+    setMensaje("");
+    setUsuarioEditado(usuario.id_usuario);
+    setFormulario({
+      nombre: usuario.nombre || "",
+      apellido: usuario.apellido || "",
+      email: usuario.email || "",
+      telefono: usuario.telefono ?? "",
+      rol: usuario.rol,
+      activo: Boolean(usuario.activo),
+      password: "",
+    });
+  };
+
+  const cerrarEdicion = () => {
+    setUsuarioEditado(null);
+    setFormulario({ ...FORMULARIO_VACIO });
+    setError("");
+  };
+
+  const manejarCambio = (event) => {
+    const { name, value } = event.target;
+    setFormulario((actual) => ({
+      ...actual,
+      [name]: name === "activo" ? value === "true" : value,
+    }));
+  };
+
+  const guardarUsuario = async (event) => {
+    event.preventDefault();
+    setGuardando(true);
+    setError("");
+    setMensaje("");
+
+    const datos = {
+      nombre: formulario.nombre.trim(),
+      apellido: formulario.apellido.trim(),
+      email: formulario.email.trim(),
+      telefono: formulario.telefono.trim() || null,
+      rol: formulario.rol,
+      activo: formulario.activo,
+    };
+    if (formulario.password !== "") datos.password = formulario.password;
+
+    try {
+      const resultado = await actualizarUsuario(usuarioEditado, datos);
+      const usuarioActualizado = {
+        ...resultado.usuario,
+        activo: Boolean(resultado.usuario.activo),
+      };
+      setUsuarios((actuales) =>
+        actuales.map((usuario) =>
+          usuario.id_usuario === usuarioEditado ? usuarioActualizado : usuario,
+        ),
+      );
+      setMensaje(resultado.message);
+      cerrarEdicion();
+    } catch (saveError) {
+      setError(saveError.message || "No se pudo actualizar el usuario.");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const darDeBajaUsuario = async (usuario) => {
+    if (!window.confirm(`¿Querés dar de baja la cuenta de ${usuario.nombre} ${usuario.apellido}?`)) {
       return;
     }
 
-    const actualizados = usuariosRegistrados.filter(
-      (registrado) => registrado.id !== usuario.id,
-    );
-
+    setError("");
+    setMensaje("");
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(actualizados));
-      setUsuariosRegistrados(actualizados);
-      setError("");
-      setMensaje(`Se eliminó la cuenta de ${usuario.nombre}.`);
-    } catch {
-      setMensaje("");
-      setError("No se pudo actualizar la lista de usuarios guardada.");
+      const resultado = await eliminarUsuario(usuario.id_usuario);
+      setUsuarios((actuales) =>
+        actuales.map((actual) =>
+          actual.id_usuario === usuario.id_usuario
+            ? { ...actual, activo: false }
+            : actual,
+        ),
+      );
+      setMensaje(resultado.message);
+    } catch (deleteError) {
+      setError(deleteError.message || "No se pudo dar de baja al usuario.");
     }
   };
 
@@ -153,11 +229,13 @@ const PanelUsuario = () => {
           </article>
         </section>
 
-        <section className="users-panel-list">
+        <section
+          className={`users-panel-list${usuarioEditado !== null ? " is-editing" : ""}`}
+        >
           <div className="users-list-heading">
             <div>
               <h2>Directorio de usuarios</h2>
-              <p>Las cuentas de prueba y de administración están protegidas.</p>
+              <p>Administrá roles y estados de las cuentas registradas.</p>
             </div>
             <span className="users-list-count">
               {usuariosVisibles.length}{" "}
@@ -205,41 +283,176 @@ const PanelUsuario = () => {
               {mensaje}
             </p>
           )}
-          {error && (
+          {error && usuarioEditado === null && (
             <p className="users-feedback users-feedback-error" role="alert">
               {error}
             </p>
+          )}
+
+          {usuarioEditado !== null && (
+            <button
+              className="users-edit-backdrop"
+              type="button"
+              onClick={cerrarEdicion}
+              disabled={guardando}
+              aria-label="Cerrar edición de usuario"
+            />
+          )}
+
+          {usuarioEditado !== null && (
+            <form
+              className="users-edit-dialog"
+              onSubmit={guardarUsuario}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="users-edit-title"
+            >
+              <div className="users-edit-heading">
+                <div>
+                  <span>ADMINISTRACIÓN</span>
+                  <h3 id="users-edit-title">Editar usuario</h3>
+                </div>
+                <button
+                  className="users-edit-close"
+                  type="button"
+                  onClick={cerrarEdicion}
+                  disabled={guardando}
+                  aria-label="Cerrar formulario"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {error && (
+                <p className="users-feedback users-feedback-error" role="alert">
+                  {error}
+                </p>
+              )}
+
+              <div className="users-edit-grid">
+                <label className="users-edit-field">
+                  <span>Nombre</span>
+                  <input
+                    name="nombre"
+                    value={formulario.nombre}
+                    onChange={manejarCambio}
+                    maxLength={60}
+                    required
+                  />
+                </label>
+                <label className="users-edit-field">
+                  <span>Apellido</span>
+                  <input
+                    name="apellido"
+                    value={formulario.apellido}
+                    onChange={manejarCambio}
+                    maxLength={60}
+                    required
+                  />
+                </label>
+                <label className="users-edit-field users-edit-field-wide">
+                  <span>Email</span>
+                  <input
+                    name="email"
+                    type="email"
+                    value={formulario.email}
+                    onChange={manejarCambio}
+                    maxLength={120}
+                    required
+                  />
+                </label>
+                <label className="users-edit-field">
+                  <span>Teléfono</span>
+                  <input
+                    name="telefono"
+                    type="tel"
+                    value={formulario.telefono}
+                    onChange={manejarCambio}
+                    maxLength={25}
+                  />
+                </label>
+                <label className="users-edit-field">
+                  <span>Rol</span>
+                  <select name="rol" value={formulario.rol} onChange={manejarCambio}>
+                    <option value="cliente">Cliente</option>
+                    <option value="agente">Agente</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                </label>
+                <label className="users-edit-field">
+                  <span>Estado de la cuenta</span>
+                  <select
+                    name="activo"
+                    value={String(formulario.activo)}
+                    onChange={manejarCambio}
+                  >
+                    <option value="true">Activa</option>
+                    <option value="false">Inactiva</option>
+                  </select>
+                </label>
+                <label className="users-edit-field users-edit-field-wide">
+                  <span>Nueva contraseña (opcional)</span>
+                  <input
+                    name="password"
+                    type="password"
+                    value={formulario.password}
+                    onChange={manejarCambio}
+                    autoComplete="new-password"
+                    minLength={8}
+                  />
+                  <small>Dejar vacío para no cambiarla.</small>
+                </label>
+              </div>
+
+              <div className="users-edit-actions">
+                <button
+                  className="users-edit-cancel"
+                  type="button"
+                  onClick={cerrarEdicion}
+                  disabled={guardando}
+                >
+                  Cancelar
+                </button>
+                <button className="users-edit-save" type="submit" disabled={guardando}>
+                  <Save size={16} />
+                  {guardando ? "Guardando..." : "Guardar cambios"}
+                </button>
+              </div>
+            </form>
           )}
 
           <div className="users-list-header" aria-hidden="true">
             <span>Usuario</span>
             <span>Rol</span>
             <span>Cuenta</span>
-            <span>Acción</span>
+            <span>Acciones</span>
           </div>
 
-          {usuariosVisibles.length ? (
+          {cargando ? (
+            <div className="users-empty" role="status">
+              Cargando usuarios...
+            </div>
+          ) : usuariosVisibles.length ? (
             <div className="users-list">
               {usuariosVisibles.map((usuario) => {
-                const iniciales = usuario.nombre
+                const nombreCompleto = `${usuario.nombre} ${usuario.apellido}`.trim();
+                const iniciales = nombreCompleto
                   .trim()
                   .split(/\s+/)
                   .slice(0, 2)
                   .map((parte) => parte[0])
                   .join("")
                   .toUpperCase();
-                const esEliminable =
-                  !usuario.esDemo && usuario.rol === "cliente";
 
                 return (
-                  <article className="users-list-row" key={usuario.id}>
+                  <article className="users-list-row" key={usuario.id_usuario}>
                     <div className="users-identity">
                       <span className="users-avatar" aria-hidden="true">
                         {iniciales || "U"}
                       </span>
                       <div className="users-identity-copy">
-                        <strong>{usuario.nombre}</strong>
-                        <span>{usuario.email || "Sin correo registrado"}</span>
+                        <strong>{nombreCompleto}</strong>
+                        <span>{usuario.email}</span>
                       </div>
                     </div>
                     <span
@@ -247,36 +460,51 @@ const PanelUsuario = () => {
                     >
                       {etiquetasRol[usuario.rol] || "Usuario"}
                     </span>
-                    <span className="users-account-type">
-                      {usuario.esDemo ? "Prueba" : "Registrada"}
+                    <span
+                      className={`users-account-type${usuario.activo ? "" : " is-inactive"}`}
+                    >
+                      {usuario.activo ? "Activa" : "Inactiva"}
                     </span>
-                    {esEliminable ? (
+                    <div className="users-row-actions">
+                      <button
+                        className="users-edit-button"
+                        type="button"
+                        onClick={() => abrirEdicion(usuario)}
+                        aria-label={`Editar usuario ${nombreCompleto}`}
+                      >
+                        <Pencil size={15} />
+                        <span>Editar</span>
+                      </button>
                       <button
                         className="users-delete-button"
                         type="button"
-                        onClick={() => eliminarUsuario(usuario)}
-                        aria-label={`Eliminar cuenta de ${usuario.nombre}`}
+                        onClick={() => darDeBajaUsuario(usuario)}
+                        disabled={!usuario.activo}
+                        aria-label={`Dar de baja a ${nombreCompleto}`}
                       >
-                        <Trash2 size={16} />
-                        <span>Eliminar</span>
+                        <Trash2 size={15} />
+                        <span>{usuario.activo ? "Dar de baja" : "Inactiva"}</span>
                       </button>
-                    ) : (
-                      <span className="users-protected-label">
-                        <ShieldCheck size={15} />
-                        Protegida
-                      </span>
-                    )}
+                    </div>
                   </article>
                 );
               })}
             </div>
-          ) : (
+          ) : usuarios.length ? (
             <div className="users-empty">
               <span className="users-empty-icon">
                 <Search size={22} />
               </span>
               <strong>No encontramos usuarios</strong>
               <span>Probá con otro nombre, correo o rol.</span>
+            </div>
+          ) : (
+            <div className="users-empty">
+              <span className="users-empty-icon">
+                <Search size={22} />
+              </span>
+              <strong>No hay usuarios registrados</strong>
+              <span>Cuando se registren, aparecerán acá.</span>
             </div>
           )}
         </section>
