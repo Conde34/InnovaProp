@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./pages/public/homePage/Home.jsx";
-import SobreNosotros from "./pages/admin/sobreNosotros/SobreNosotros.jsx";
+import SobreNosotros from "./pages/public/sobreNosotros/SobreNosotros.jsx";
 import Contacto from "./pages/public/contacto/Contacto.jsx";
 import DetallePropiedad from "./pages/public/detallePropiedad/DetallePropiedad.jsx";
 import PanelPropiedades from "./pages/admin/panelPropiedades/PanelPropiedades.jsx";
