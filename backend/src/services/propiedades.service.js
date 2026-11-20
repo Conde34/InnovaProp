@@ -46,7 +46,35 @@ function formatearPropiedad(fila) {
 }
 
 export async function findAll(filtros) {
-  const filas = await propiedadModel.findAll(filtros);
+  const filtrosValidados = {};
+  const campos = ["tipo", "operacion", "ubicacion", "moneda", "precioMin", "precioMax"];
+
+  for (const campo of campos) {
+    const valor = filtros[campo];
+    if (valor === undefined) {
+      continue;
+    }
+
+    if (typeof valor !== "string") {
+      const error = new Error(`${campo} debe ser un valor de texto`);
+      error.status = 400;
+      throw error;
+    }
+
+    if (campo === "precioMin" || campo === "precioMax") {
+      const precio = Number(valor);
+      if (valor.trim() === "" || !Number.isFinite(precio) || precio < 0) {
+        const error = new Error(`${campo} debe ser un número válido`);
+        error.status = 400;
+        throw error;
+      }
+      filtrosValidados[campo] = precio;
+    } else {
+      filtrosValidados[campo] = valor;
+    }
+  }
+
+  const filas = await propiedadModel.findAll(filtrosValidados);
   return filas.map(formatearPropiedad);
 }
 
