@@ -1,5 +1,29 @@
 import * as propiedadModel from "../models/propiedad.model.js";
 
+export async function create(datos, idAgente) {
+  const idTipo = await propiedadModel.findTipoIdByName(datos.tipo);
+  if (!idTipo) {
+    const error = new Error("Tipo de propiedad inválido");
+    error.status = 400;
+    throw error;
+  }
+
+  const nombreZona = datos.ubicacion.replace(/, Tucumán$/, "");
+  const idZona = await propiedadModel.findZonaIdByName(nombreZona);
+  if (!idZona) {
+    const error = new Error("Ubicación inválida");
+    error.status = 400;
+    throw error;
+  }
+
+  return propiedadModel.create({
+    ...datos,
+    id_tipo: idTipo,
+    id_zona: idZona,
+    id_agente: idAgente,
+  });
+}
+
 function formatearPropiedad(fila) {
   return {
     id: fila.id,
