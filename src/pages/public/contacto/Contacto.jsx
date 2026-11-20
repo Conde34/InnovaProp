@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
@@ -14,7 +13,6 @@ import {
 } from "react-icons/fa";
 import "./Contacto.css";
 
-const CLAVE_STORAGE = "innovaprop_consultas";
 const MAX_MENSAJE = 500;
 
 const MOTIVOS = [
@@ -64,19 +62,16 @@ const validar = (valores) => {
   return errores;
 };
 
-// Sin backend: las consultas se guardan en el navegador para poder
-// mostrarlas más adelante en el panel o el dashboard.
-const guardarConsulta = (valores) => {
-  try {
-    const guardadas = JSON.parse(localStorage.getItem(CLAVE_STORAGE)) || [];
-    guardadas.push({
-      id: Date.now(),
-      ...valores,
-      fecha: new Date().toISOString(),
-    });
-    localStorage.setItem(CLAVE_STORAGE, JSON.stringify(guardadas));
-  } catch {
-    // Si el almacenamiento no está disponible, el formulario igual funciona.
+// Manda la consulta al backend, que la guarda en MySQL.
+const guardarConsulta = async (valores) => {
+  const respuesta = await fetch("http://localhost:3000/api/consultas", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(valores),
+  });
+
+  if (!respuesta.ok) {
+    throw new Error("No se pudo enviar la consulta");
   }
 };
 
@@ -85,12 +80,14 @@ const Contacto = () => {
   const [errores, setErrores] = useState({});
   const [intentado, setIntentado] = useState(false);
   const [enviado, setEnviado] = useState(false);
+  const [errorEnvio, setErrorEnvio] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     const nuevos = { ...valores, [name]: value };
     setValores(nuevos);
     setEnviado(false);
+    setErrorEnvio(false);
 
     // Una vez que intentó enviar, se revalida mientras escribe.
     if (intentado) {
@@ -98,9 +95,10 @@ const Contacto = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIntentado(true);
+    setErrorEnvio(false);
 
     const erroresNuevos = validar(valores);
     setErrores(erroresNuevos);
@@ -110,18 +108,23 @@ const Contacto = () => {
       return;
     }
 
-    guardarConsulta({
-      ...valores,
-      nombre: valores.nombre.trim(),
-      email: valores.email.trim(),
-      telefono: valores.telefono.trim(),
-      mensaje: valores.mensaje.trim(),
-    });
+    try {
+      await guardarConsulta({
+        ...valores,
+        nombre: valores.nombre.trim(),
+        email: valores.email.trim(),
+        telefono: valores.telefono.trim(),
+        mensaje: valores.mensaje.trim(),
+      });
 
-    setValores(VALORES_INICIALES);
-    setErrores({});
-    setIntentado(false);
-    setEnviado(true);
+      setValores(VALORES_INICIALES);
+      setErrores({});
+      setIntentado(false);
+      setEnviado(true);
+    } catch {
+      setEnviado(false);
+      setErrorEnvio(true);
+    }
   };
 
   return (
@@ -192,6 +195,13 @@ const Contacto = () => {
                 <Alert variant="success" className="ct-alerta" role="status">
                   ¡Gracias! Recibimos tu consulta y te vamos a responder muy
                   pronto.
+                </Alert>
+              )}
+
+              {errorEnvio && (
+                <Alert variant="danger" className="ct-alerta" role="alert">
+                  No pudimos enviar tu consulta. Probá de nuevo en unos
+                  minutos.
                 </Alert>
               )}
 
