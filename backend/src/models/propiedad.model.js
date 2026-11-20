@@ -45,13 +45,13 @@ export async function findAll(filtros = {}) {
     condiciones.push("p.moneda = ?");
     valores.push(filtros.moneda);
   }
-  if (filtros.precioMin) {
+  if (filtros.precioMin !== undefined) {
     condiciones.push("p.precio >= ?");
-    valores.push(Number(filtros.precioMin));
+    valores.push(filtros.precioMin);
   }
-  if (filtros.precioMax) {
+  if (filtros.precioMax !== undefined) {
     condiciones.push("p.precio <= ?");
-    valores.push(Number(filtros.precioMax));
+    valores.push(filtros.precioMax);
   }
 
   const where = condiciones.length ? `WHERE ${condiciones.join(" AND ")}` : "";
