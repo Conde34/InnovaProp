@@ -1,77 +1,144 @@
-import { useParams } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getCasas } from "../../../data/properties";
+import { obtenerPropiedad } from "../../../services/propiedadesService";
+import "./DetallePropiedad.css";
 
 const DetallePropiedad = () => {
   const { id } = useParams();
+  const location = useLocation();
   const [propiedad, setPropiedad] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+  const rutaAnterior =
+    typeof location.state?.from === "string" &&
+    location.state.from.startsWith("/") &&
+    !location.state.from.startsWith("//")
+      ? location.state.from
+      : "/propiedades";
+
+  const botonVolver = (
+    <Link className="property-detail-back" to={rutaAnterior}>
+      <ArrowLeft size={17} />
+      Volver atrás
+    </Link>
+  );
 
   useEffect(() => {
-    getCasas()
-      .then((casas) => {
-        setPropiedad(casas.find((casa) => String(casa.id) === id) || null);
+    let active = true;
+    setCargando(true);
+    setPropiedad(null);
+    setError("");
+
+    obtenerPropiedad(id)
+      .then((resultado) => {
+        if (active) setPropiedad(resultado);
       })
-      .catch((error) => {
-        console.error(error);
-        setError("No se pudo cargar la propiedad.");
+      .catch((loadError) => {
+        if (!active) return;
+        if (loadError.message === "Propiedad no encontrada") {
+          setPropiedad(null);
+          return;
+        }
+        setError(loadError.message || "No se pudo cargar la propiedad.");
       })
-      .finally(() => setCargando(false));
+      .finally(() => {
+        if (active) setCargando(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [id]);
 
   if (cargando) {
-    return <main className="container my-5"><p>Cargando propiedad...</p></main>;
+    return (
+      <main className="property-detail-page">
+        <div className="property-detail-shell">
+          {botonVolver}
+          <p className="property-detail-feedback" role="status">
+            Cargando propiedad...
+          </p>
+        </div>
+      </main>
+    );
   }
 
   if (error) {
-    return <main className="container my-5"><p className="alert alert-danger" role="alert">{error}</p></main>;
+    return (
+      <main className="property-detail-page">
+        <div className="property-detail-shell">
+          {botonVolver}
+          <p className="property-detail-feedback is-error" role="alert">
+            {error}
+          </p>
+        </div>
+      </main>
+    );
   }
 
   if (!propiedad) {
     return (
-      <main className="container my-5">
-        <p className="alert alert-warning">No se encontró la propiedad solicitada.</p>
+      <main className="property-detail-page">
+        <div className="property-detail-shell">
+          {botonVolver}
+          <p className="property-detail-feedback">
+            No se encontró la propiedad solicitada.
+          </p>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="container my-5">
-      <div className="row g-4 align-items-start">
-        <div className="col-12 col-lg-7">
-          <img
-            src={propiedad.imagen}
-            alt={propiedad.titulo}
-            className="img-fluid rounded-4 w-100"
-          />
-        </div>
-        <div className="col-12 col-lg-5">
-          <p className="text-muted mb-2">ID de propiedad: {propiedad.id}</p>
-          <h1 className="h2">{propiedad.titulo}</h1>
-          <p className="mb-2">
-            {propiedad.tipo} · {propiedad.operacion}
-          </p>
-          <p className="fs-4 fw-bold">
-            {propiedad.precio} {propiedad.moneda}
-          </p>
-          <p>{propiedad.descripcion}</p>
-          <hr />
-          <dl className="row">
-            <dt className="col-sm-5">Ubicación</dt>
-            <dd className="col-sm-7">{propiedad.ubicacion}</dd>
-            <dt className="col-sm-5">Dirección</dt>
-            <dd className="col-sm-7">{propiedad.direccion}</dd>
-            <dt className="col-sm-5">Superficie</dt>
-            <dd className="col-sm-7">{propiedad.superficie} m²</dd>
-            <dt className="col-sm-5">Ambientes</dt>
-            <dd className="col-sm-7">{propiedad.ambientes}</dd>
-            <dt className="col-sm-5">Dormitorios</dt>
-            <dd className="col-sm-7">{propiedad.dormitorios}</dd>
-            <dt className="col-sm-5">Baños</dt>
-            <dd className="col-sm-7">{propiedad.banos}</dd>
-          </dl>
-        </div>
+    <main className="property-detail-page">
+      <div className="property-detail-shell">
+        {botonVolver}
+        <section className="property-detail-card">
+          <div className="property-detail-image-wrap">
+            <img
+              src={propiedad.imagen}
+              alt={propiedad.titulo}
+              className="property-detail-image"
+            />
+          </div>
+          <div className="property-detail-content">
+            <span className="property-detail-eyebrow">
+              {propiedad.tipo} <span>·</span> {propiedad.operacion}
+            </span>
+            <h1>{propiedad.titulo}</h1>
+            <p className="property-detail-location">{propiedad.ubicacion}</p>
+            <p className="property-detail-price">
+              {new Intl.NumberFormat("es-AR", {
+                maximumFractionDigits: 0,
+              }).format(Number(propiedad.precio))}
+              <span>{propiedad.moneda}</span>
+            </p>
+            <p className="property-detail-description">{propiedad.descripcion}</p>
+            <dl className="property-detail-specs">
+              <div>
+                <dt>Dirección</dt>
+                <dd>{propiedad.direccion}</dd>
+              </div>
+              <div>
+                <dt>Superficie</dt>
+                <dd>{propiedad.superficie} m²</dd>
+              </div>
+              <div>
+                <dt>Ambientes</dt>
+                <dd>{propiedad.ambientes}</dd>
+              </div>
+              <div>
+                <dt>Dormitorios</dt>
+                <dd>{propiedad.dormitorios}</dd>
+              </div>
+              <div>
+                <dt>Baños</dt>
+                <dd>{propiedad.banos}</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
       </div>
     </main>
   );

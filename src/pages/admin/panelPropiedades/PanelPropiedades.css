@@ -231,6 +231,46 @@
   animation: properties-admin-enter 280ms ease both;
 }
 
+.properties-admin-inventory.is-editing {
+  animation: none;
+}
+
+.properties-admin-edit-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  padding: 0;
+  border: 0;
+  background: rgb(8 14 19 / 76%);
+  cursor: default;
+}
+
+.properties-admin-form.is-editing {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 1001;
+  width: min(940px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  margin: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #20272d;
+  box-shadow: 0 24px 80px rgb(0 0 0 / 48%);
+  animation: properties-admin-modal-enter 220ms ease both;
+}
+
+@keyframes properties-admin-modal-enter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 12px));
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
 .properties-admin-form-heading {
   margin-bottom: 18px;
 }

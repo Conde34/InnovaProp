@@ -1,27 +1,84 @@
 import * as propiedadModel from "../models/propiedad.model.js";
 
-export async function create(datos, idAgente) {
+function crearError(status, message) {
+  const error = new Error(message);
+  error.status = status;
+  return error;
+}
+
+function validarId(id) {
+  const idNumerico = Number(id);
+  if (!/^\d+$/.test(id) || idNumerico < 1 || !Number.isSafeInteger(idNumerico)) {
+    return null;
+  }
+  return idNumerico;
+}
+
+async function resolverRelaciones(datos) {
   const idTipo = await propiedadModel.findTipoIdByName(datos.tipo);
   if (!idTipo) {
-    const error = new Error("Tipo de propiedad inválido");
-    error.status = 400;
-    throw error;
+    throw crearError(400, "Tipo de propiedad inválido");
   }
 
   const nombreZona = datos.ubicacion.replace(/, Tucumán$/, "");
   const idZona = await propiedadModel.findZonaIdByName(nombreZona);
   if (!idZona) {
-    const error = new Error("Ubicación inválida");
-    error.status = 400;
-    throw error;
+    throw crearError(400, "Ubicación inválida");
   }
 
+  return { id_tipo: idTipo, id_zona: idZona };
+}
+
+async function verificarPermiso(id, idUsuario, rol) {
+  const idNumerico = validarId(id);
+  if (idNumerico === null) {
+    throw crearError(404, "Propiedad no encontrada");
+  }
+
+  const idAgente = await propiedadModel.findAgenteIdById(idNumerico);
+  if (idAgente === null) {
+    throw crearError(404, "Propiedad no encontrada");
+  }
+
+  if (rol === "admin") {
+    return idNumerico;
+  }
+  if (rol !== "agente" || Number(idAgente) !== Number(idUsuario)) {
+    throw crearError(403, "No tenés permiso para esta propiedad");
+  }
+
+  return idNumerico;
+}
+
+export async function create(datos, idAgente) {
+  const relaciones = await resolverRelaciones(datos);
   return propiedadModel.create({
     ...datos,
-    id_tipo: idTipo,
-    id_zona: idZona,
+    ...relaciones,
     id_agente: idAgente,
   });
+}
+
+export async function update(id, datos, idUsuario, rol) {
+  const idNumerico = await verificarPermiso(id, idUsuario, rol);
+  const relaciones = await resolverRelaciones(datos);
+  const actualizada = await propiedadModel.update(idNumerico, {
+    ...datos,
+    ...relaciones,
+  });
+
+  if (!actualizada) {
+    throw crearError(404, "Propiedad no encontrada");
+  }
+}
+
+export async function remove(id, idUsuario, rol) {
+  const idNumerico = await verificarPermiso(id, idUsuario, rol);
+  const eliminada = await propiedadModel.deleteById(idNumerico);
+
+  if (!eliminada) {
+    throw crearError(404, "Propiedad no encontrada");
+  }
 }
 
 function formatearPropiedad(fila) {
@@ -79,8 +136,8 @@ export async function findAll(filtros) {
 }
 
 export async function findById(id) {
-  const idNumerico = Number(id);
-  if (!/^\d+$/.test(id) || idNumerico < 1 || !Number.isSafeInteger(idNumerico)) {
+  const idNumerico = validarId(id);
+  if (idNumerico === null) {
     return null;
   }
 

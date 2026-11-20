@@ -41,6 +41,14 @@ export async function findZonaIdByName(nombre) {
   return filas[0]?.id_zona || null;
 }
 
+export async function findAgenteIdById(id) {
+  const [filas] = await pool.execute(
+    "SELECT id_agente FROM propiedades WHERE id_propiedad = ?",
+    [id]
+  );
+  return filas[0]?.id_agente ?? null;
+}
+
 export async function create(datos) {
   const connection = await pool.getConnection();
   try {
@@ -78,6 +86,109 @@ export async function create(datos) {
 
     await connection.commit();
     return resultado.insertId;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function update(id, datos) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const [propiedades] = await connection.execute(
+      "SELECT id_propiedad FROM propiedades WHERE id_propiedad = ? FOR UPDATE",
+      [id]
+    );
+    if (!propiedades.length) {
+      await connection.rollback();
+      return false;
+    }
+
+    await connection.execute(
+      `UPDATE propiedades
+       SET titulo = ?, descripcion = ?, id_tipo = ?, id_zona = ?, operacion = ?,
+           precio = ?, moneda = ?, direccion = ?, ambientes = ?, dormitorios = ?,
+           banos = ?, superficie = ?, estado = ?, destacado = ?
+       WHERE id_propiedad = ?`,
+      [
+        datos.titulo,
+        datos.descripcion || null,
+        datos.id_tipo,
+        datos.id_zona,
+        datos.operacion,
+        datos.precio,
+        datos.moneda,
+        datos.direccion,
+        datos.ambientes,
+        datos.dormitorios,
+        datos.banos,
+        datos.superficie,
+        datos.estado,
+        datos.destacado,
+        id,
+      ]
+    );
+
+    if (datos.imagen !== undefined) {
+      const [imagenes] = await connection.execute(
+        `SELECT id_imagen FROM imagenes_propiedad
+         WHERE id_propiedad = ? AND es_principal = 1
+         LIMIT 1 FOR UPDATE`,
+        [id]
+      );
+
+      if (imagenes.length) {
+        await connection.execute(
+          "UPDATE imagenes_propiedad SET url_imagen = ? WHERE id_propiedad = ? AND es_principal = 1",
+          [datos.imagen, id]
+        );
+      } else {
+        await connection.execute(
+          "INSERT INTO imagenes_propiedad (id_propiedad, url_imagen, es_principal) VALUES (?, ?, ?)",
+          [id, datos.imagen, true]
+        );
+      }
+    }
+
+    await connection.commit();
+    return true;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function deleteById(id) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const [propiedades] = await connection.execute(
+      "SELECT id_propiedad FROM propiedades WHERE id_propiedad = ? FOR UPDATE",
+      [id]
+    );
+    if (!propiedades.length) {
+      await connection.rollback();
+      return false;
+    }
+
+    await connection.execute("DELETE FROM favoritos WHERE id_propiedad = ?", [id]);
+    await connection.execute("DELETE FROM imagenes_propiedad WHERE id_propiedad = ?", [id]);
+    const [resultado] = await connection.execute(
+      "DELETE FROM propiedades WHERE id_propiedad = ?",
+      [id]
+    );
+    if (resultado.affectedRows !== 1) {
+      await connection.rollback();
+      return false;
+    }
+
+    await connection.commit();
+    return true;
   } catch (error) {
     await connection.rollback();
     throw error;

@@ -9,6 +9,29 @@ export async function create(req, res, next) {
   }
 }
 
+export async function update(req, res, next) {
+  try {
+    await propiedadesService.update(
+      req.params.id,
+      req.validatedBody,
+      req.user.id,
+      req.user.rol
+    );
+    return res.status(200).json({ message: "Propiedad actualizada" });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function remove(req, res, next) {
+  try {
+    await propiedadesService.remove(req.params.id, req.user.id, req.user.rol);
+    return res.status(200).json({ message: "Propiedad eliminada" });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 export async function getAll(req, res, next) {
   try {
     const propiedades = await propiedadesService.findAll(req.query);

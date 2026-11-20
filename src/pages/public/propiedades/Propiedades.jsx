@@ -11,12 +11,19 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Cards from "../../../components/Cards";
-import { getCasas } from "../../../data/properties";
+import useAuthStore from "../../../store/useAuthStore";
+import {
+  agregarFavorito,
+  listarFavoritos,
+  quitarFavorito,
+} from "../../../services/favoritosService";
+import { listarPropiedades } from "../../../services/propiedadesService";
 import "./Propiedades.css";
 
 const PROPIEDADES_POR_PAGINA = 6;
 
 const Propiedades = () => {
+  const user = useAuthStore((state) => state.user);
   const [propiedades, setPropiedades] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [tipoSeleccionado, setTipoSeleccionado] = useState("");
@@ -24,14 +31,17 @@ const Propiedades = () => {
   const [paginaActual, setPaginaActual] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [favoritosIds, setFavoritosIds] = useState([]);
+  const [favoritosCargando, setFavoritosCargando] = useState(false);
+  const [favoritoEnProceso, setFavoritoEnProceso] = useState([]);
+  const [errorFavoritos, setErrorFavoritos] = useState("");
 
   useEffect(() => {
     let active = true;
 
-    getCasas()
+    listarPropiedades()
       .then((casas) => {
         if (!active) return;
-        localStorage.setItem("propiedades", JSON.stringify(casas));
         setPropiedades(casas);
       })
       .catch((loadError) => {
@@ -46,6 +56,41 @@ const Propiedades = () => {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    if (user?.rol !== "cliente") {
+      setFavoritosIds([]);
+      setFavoritosCargando(false);
+      setErrorFavoritos("");
+      return () => {
+        active = false;
+      };
+    }
+
+    setFavoritosCargando(true);
+    listarFavoritos()
+      .then((favoritos) => {
+        if (!Array.isArray(favoritos)) {
+          throw new Error("La respuesta de favoritos no tiene el formato esperado.");
+        }
+        if (active) setFavoritosIds(favoritos.map((favorito) => String(favorito.id)));
+      })
+      .catch((favoriteError) => {
+        if (active) {
+          setErrorFavoritos(
+            favoriteError.message || "No se pudieron cargar tus favoritos.",
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setFavoritosCargando(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [user?.rol]);
 
   const tipos = [...new Set(propiedades.map((propiedad) => propiedad.tipo))]
     .filter(Boolean)
@@ -94,6 +139,33 @@ const Propiedades = () => {
     setTipoSeleccionado("");
     setOperacionSeleccionada("");
     setPaginaActual(1);
+  };
+
+  const alternarFavorito = async (id) => {
+    const idTexto = String(id);
+    const yaEsFavorito = favoritosIds.includes(idTexto);
+    setFavoritoEnProceso((actuales) => [...actuales, idTexto]);
+    setErrorFavoritos("");
+
+    try {
+      if (yaEsFavorito) {
+        await quitarFavorito(id);
+        setFavoritosIds((actuales) => actuales.filter((actual) => actual !== idTexto));
+      } else {
+        await agregarFavorito(id);
+        setFavoritosIds((actuales) =>
+          actuales.includes(idTexto) ? actuales : [...actuales, idTexto],
+        );
+      }
+    } catch (favoriteError) {
+      setErrorFavoritos(
+        favoriteError.message || "No se pudo actualizar tu lista de favoritos.",
+      );
+    } finally {
+      setFavoritoEnProceso((actuales) =>
+        actuales.filter((actual) => actual !== idTexto),
+      );
+    }
   };
 
   return (
@@ -243,6 +315,12 @@ const Propiedades = () => {
             )}
           </div>
 
+          {errorFavoritos && (
+            <div className="properties-feedback properties-error" role="alert">
+              {errorFavoritos}
+            </div>
+          )}
+
           {error ? (
             <div className="properties-feedback properties-error" role="alert">
               <span>{error}</span>
@@ -271,6 +349,16 @@ const Propiedades = () => {
                       ubicacion={propiedad.ubicacion}
                       descripcion={propiedad.descripcion}
                       imagen={propiedad.imagen}
+                      favorito={favoritosIds.includes(String(propiedad.id))}
+                      favoritoEnProceso={
+                        favoritosCargando ||
+                        favoritoEnProceso.includes(String(propiedad.id))
+                      }
+                      onAlternarFavorito={
+                        user?.rol === "cliente"
+                          ? () => alternarFavorito(propiedad.id)
+                          : undefined
+                      }
                     />
                   </div>
                 ))}

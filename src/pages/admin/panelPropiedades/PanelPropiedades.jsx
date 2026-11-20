@@ -21,7 +21,11 @@ import {
   eliminarCasa,
   getCasas,
 } from "../../../data/properties";
-import { crearPropiedad } from "../../../services/propiedadesService";
+import {
+  actualizarPropiedad,
+  crearPropiedad,
+  eliminarPropiedad,
+} from "../../../services/propiedadesService";
 import "./PanelPropiedades.css";
 
 const IMAGEN_PREDETERMINADA =
@@ -179,10 +183,12 @@ const PanelPropiedades = () => {
     };
 
     try {
+      const datosApi = { ...datos };
+      delete datosApi.id;
+      delete datosApi.disponible;
+
       let actualizadas;
       if (propiedadEditada === null) {
-        const datosApi = { ...datos };
-        delete datosApi.disponible;
         const creada = await crearPropiedad(datosApi);
         const nuevaPropiedad = { ...datos, id: creada.id };
         try {
@@ -195,7 +201,23 @@ const PanelPropiedades = () => {
           return;
         }
       } else {
-        actualizadas = await actualizarCasa(propiedadEditada, datos);
+        await actualizarPropiedad(propiedadEditada, datosApi);
+        try {
+          actualizadas = await actualizarCasa(propiedadEditada, datos);
+        } catch (cacheError) {
+          const propiedadActualizada = { ...datos, id: propiedadEditada };
+          setPropiedades((actuales) =>
+            actuales.map((property) =>
+              String(property.id) === String(propiedadEditada)
+                ? propiedadActualizada
+                : property,
+            ),
+          );
+          setMensaje("La propiedad se actualizó en la base de datos.");
+          setError(`No se pudo actualizar el caché local: ${cacheError.message}`);
+          limpiarFormulario();
+          return;
+        }
       }
 
       setPropiedades(actualizadas);
@@ -218,10 +240,23 @@ const PanelPropiedades = () => {
     setError("");
     setMensaje("");
     try {
-      const actualizadas = await eliminarCasa(property.id);
+      const resultado = await eliminarPropiedad(property.id);
+      let actualizadas;
+      try {
+        actualizadas = await eliminarCasa(property.id);
+      } catch (cacheError) {
+        setPropiedades((actuales) =>
+          actuales.filter((actual) => String(actual.id) !== String(property.id)),
+        );
+        if (propiedadEditada === property.id) limpiarFormulario();
+        setMensaje(resultado.message || "La propiedad se eliminó de la base de datos.");
+        setError(`No se pudo actualizar el caché local: ${cacheError.message}`);
+        return;
+      }
+
       setPropiedades(actualizadas);
       if (propiedadEditada === property.id) limpiarFormulario();
-      setMensaje("La propiedad se eliminó correctamente.");
+      setMensaje(resultado.message || "La propiedad se eliminó correctamente.");
     } catch (deleteError) {
       setError(deleteError.message || "No se pudo eliminar la propiedad.");
     }
@@ -273,7 +308,9 @@ const PanelPropiedades = () => {
           </article>
         </section>
 
-        <section className="properties-admin-inventory">
+        <section
+          className={`properties-admin-inventory${propiedadEditada !== null ? " is-editing" : ""}`}
+        >
           <div className="properties-admin-section-heading">
             <div>
               <h2>Inventario</h2>
@@ -302,15 +339,30 @@ const PanelPropiedades = () => {
             </p>
           )}
 
+          {mostrarFormulario && propiedadEditada !== null && (
+            <button
+              className="properties-admin-edit-backdrop"
+              type="button"
+              onClick={limpiarFormulario}
+              disabled={guardando}
+              aria-label="Cerrar formulario de edición"
+            />
+          )}
+
           {mostrarFormulario && (
             <form
-              className="properties-admin-form"
+              className={`properties-admin-form${propiedadEditada !== null ? " is-editing" : ""}`}
               onSubmit={guardarPropiedad}
+              role={propiedadEditada !== null ? "dialog" : undefined}
+              aria-modal={propiedadEditada !== null ? "true" : undefined}
+              aria-labelledby={propiedadEditada !== null ? "properties-admin-form-title" : undefined}
             >
               <div className="properties-admin-form-heading">
                 <div>
                   <span>{propiedadEditada === null ? "NUEVA PUBLICACIÓN" : "EDITAR PUBLICACIÓN"}</span>
-                  <h3>{propiedadEditada === null ? "Datos de la propiedad" : "Actualizá los datos"}</h3>
+                  <h3 id="properties-admin-form-title">
+                    {propiedadEditada === null ? "Datos de la propiedad" : "Modificar propiedad"}
+                  </h3>
                 </div>
                 <button
                   className="properties-admin-icon-button"
@@ -511,7 +563,11 @@ const PanelPropiedades = () => {
                   disabled={guardando}
                 >
                   <Save size={16} />
-                  {guardando ? "Guardando..." : "Guardar propiedad"}
+                  {guardando
+                    ? "Guardando..."
+                    : propiedadEditada === null
+                      ? "Guardar propiedad"
+                      : "Guardar cambios"}
                 </button>
               </div>
             </form>

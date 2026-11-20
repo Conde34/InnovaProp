@@ -1,4 +1,5 @@
 import { Sparkles, ArrowUpRight, ShieldCheck, Clock, CreditCard } from "lucide-react";
+import {Link} from 'react-router-dom'
 
 const Home = () => {
 
@@ -81,15 +82,15 @@ const Home = () => {
 
             
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-1">
-              <a
-                href="#destacada"
+              <Link
+                to="/propiedades"
                 className="inline-flex items-center justify-center gap-2 px-5 py-4.5 rounded-xl bg-[#ffa323] hover:bg-[#ffa323]/90   !text-[#344e5e] !no-underline hover:no-underline visited:!text-[#344e5e] active:!text-[#344e5e] font-semibold text-sm transition-all duration-300 shadow-lg shadow-[#ffa323]/25 hover:scale-[1.02]"
               >
                 <span className="text-black text-decoration-none">
                   Explorar Propiedades
                 </span>
                 <ArrowUpRight className="w-5 h-5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </a>
+              </Link>
 
             </div>
 

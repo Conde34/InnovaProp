@@ -13,6 +13,8 @@ import NotFound from "./components/NotFound.jsx";
 import Unauthorized from "./components/Unauthorized.jsx";
 import Login from "./pages/public/login/Login.jsx";
 import Register from "./pages/public/register/Register.jsx";
+import Favoritos from "./pages/public/favoritos/Favoritos.jsx";
+import Consultas from "./pages/admin/consultas/Consultas.jsx";
 import UsersRoute from "./router/UsersRoute.jsx";
 import AdminRoute from "./router/AdminRoute.jsx";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -37,6 +39,10 @@ const App = () => {
             <Route path="/propiedades/:id" element={<DetallePropiedad />} />
           </Route>
 
+          <Route element={<AdminRoute allowedRoles={["cliente"]} />}>
+            <Route path="/favoritos" element={<Favoritos />} />
+          </Route>
+
           <Route element={<AdminRoute allowedRoles={["admin", "agente"]} />}>
             <Route path="/admin/panelPropiedades" element={<PanelPropiedades />} />
           </Route>
@@ -45,6 +51,7 @@ const App = () => {
           <Route element={<AdminRoute />}>
             <Route path="/admin/panelUsuarios" element={<PanelUsuario />} />
             <Route path="/admin/dashboard" element={<Dashboard />} />
+            <Route path="/admin/consultas" element={<Consultas />} />
           </Route>
           
           <Route path="*" element={<NotFound />} />
