@@ -1,11 +1,4 @@
-import {
-  Sparkles,
-  ArrowUpRight,
-  ShieldCheck,
-  Clock,
-  CreditCard,
-} from "lucide-react";
-
+import { Sparkles, ArrowUpRight, ShieldCheck, Clock, CreditCard } from "lucide-react";
 
 const Home = () => {
 
