@@ -105,6 +105,40 @@ app.get("/api/propiedades/:id", async (req, res) => {
   }
 });
 
+// Recibe una consulta del formulario de Contacto y la guarda en MySQL
+const texto = (valor) => (typeof valor === "string" ? valor.trim() : "");
+
+app.post("/api/consultas", async (req, res) => {
+  const nombre = texto(req.body?.nombre);
+  const email = texto(req.body?.email);
+  const telefono = texto(req.body?.telefono);
+  const motivo = texto(req.body?.motivo);
+  const mensaje = texto(req.body?.mensaje);
+
+  const errores = {};
+  if (nombre.length < 2) errores.nombre = "Ingresá tu nombre (mínimo 2 caracteres).";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errores.email = "Ingresá un email válido.";
+  if (telefono && !/^[0-9+\-()\s]{8,20}$/.test(telefono)) errores.telefono = "Ingresá un teléfono válido.";
+  if (!motivo) errores.motivo = "Elegí el motivo de tu consulta.";
+  if (mensaje.length < 10) errores.mensaje = "Contanos un poco más (mínimo 10 caracteres).";
+
+  if (Object.keys(errores).length > 0) {
+    return res.status(400).json({ error: "Datos inválidos", errores });
+  }
+
+  try {
+    const [resultado] = await pool.query(
+      "INSERT INTO consultas (nombre, email, telefono, motivo, mensaje) VALUES (?, ?, ?, ?, ?)",
+      [nombre, email, telefono || null, motivo, mensaje]
+    );
+
+    res.status(201).json({ mensaje: "Consulta recibida", id: resultado.insertId });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al guardar la consulta" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
