@@ -1,102 +1,328 @@
+import { useEffect, useState } from "react";
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  Building2,
+  House,
+  MapPin,
+  Search,
+  Sparkles,
+} from "lucide-react";
+import { Link } from "react-router-dom";
 import Cards from "../../../components/Cards";
-import { Container, Row, Col } from "react-bootstrap";
-import { useState, useEffect } from "react";
 import { getCasas } from "../../../data/properties";
-import "./Propiedades.css"
+import "./Propiedades.css";
+
+const PROPIEDADES_POR_PAGINA = 6;
 
 const Propiedades = () => {
   const [propiedades, setPropiedades] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [tipoSeleccionado, setTipoSeleccionado] = useState("");
+  const [operacionSeleccionada, setOperacionSeleccionada] = useState("");
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let active = true;
+
     getCasas()
       .then((casas) => {
+        if (!active) return;
         localStorage.setItem("propiedades", JSON.stringify(casas));
         setPropiedades(casas);
       })
-      .catch((error) => {
-        console.error(error);
-        setError("No se pudieron cargar las propiedades.");
+      .catch((loadError) => {
+        console.error(loadError);
+        if (active) setError("No se pudieron cargar las propiedades.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
+  const tipos = [...new Set(propiedades.map((propiedad) => propiedad.tipo))]
+    .filter(Boolean)
+    .sort((primero, segundo) => primero.localeCompare(segundo, "es"));
 
-    // Estados para la paginación
-  const [paginaActual, setPaginaActual] = useState(1);
-  const propiedadesPorPagina = 6; // 6 tarjetas por página
+  const termino = busqueda.trim().toLocaleLowerCase("es");
+  const propiedadesFiltradas = propiedades.filter((propiedad) => {
+    const textoPropiedad = [
+      propiedad.titulo,
+      propiedad.tipo,
+      propiedad.ubicacion,
+      propiedad.descripcion,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLocaleLowerCase("es");
 
+    return (
+      (!termino || textoPropiedad.includes(termino)) &&
+      (!tipoSeleccionado || propiedad.tipo === tipoSeleccionado) &&
+      (!operacionSeleccionada ||
+        propiedad.operacion === operacionSeleccionada)
+    );
+  });
 
-  // Lógica de Paginación
-  const indiceUltimoItem = paginaActual * propiedadesPorPagina;
-  const indicePrimerItem = indiceUltimoItem - propiedadesPorPagina;
-  const propiedadesVisibles = propiedades.slice(
-    indicePrimerItem,
-    indiceUltimoItem,
+  const totalPaginas = Math.ceil(
+    propiedadesFiltradas.length / PROPIEDADES_POR_PAGINA,
   );
-  const totalPaginas = Math.ceil(propiedades.length / propiedadesPorPagina);
+  const paginasMostradas = Math.max(totalPaginas, 1);
+  const propiedadesVisibles = propiedadesFiltradas.slice(
+    (paginaActual - 1) * PROPIEDADES_POR_PAGINA,
+    paginaActual * PROPIEDADES_POR_PAGINA,
+  );
+  const ventasCount = propiedades.filter(
+    (propiedad) => propiedad.operacion === "Venta",
+  ).length;
+  const alquileresCount = propiedades.filter(
+    (propiedad) => propiedad.operacion === "Alquiler",
+  ).length;
+  const hayFiltros = Boolean(
+    busqueda || tipoSeleccionado || operacionSeleccionada,
+  );
 
-  const siguientePagina = () => {
-    if (paginaActual < totalPaginas) setPaginaActual(paginaActual + 1);
+  const limpiarFiltros = () => {
+    setBusqueda("");
+    setTipoSeleccionado("");
+    setOperacionSeleccionada("");
+    setPaginaActual(1);
   };
-
-  const paginaAnterior = () => {
-    if (paginaActual > 1) setPaginaActual(paginaActual - 1);
-  };
-
 
   return (
-    <div className="my-5">
-      <Container>
-        {error && <p className="alert alert-danger" role="alert">{error}</p>}
-        {/* Grilla con separación g-4 */}
-        <Row className="g-4">
-          {propiedadesVisibles.map((propiedad) => (
-            <Col
-              sm={12}
-              md={6}
-              lg={4}
-              key={propiedad.id}
-              className="d-flex justify-content-center"
-            >
-              <Cards
-                id={propiedad.id}
-                titulo={propiedad.titulo}
-                tipo={propiedad.tipo}
-                operacion={propiedad.operacion}
-                precio={propiedad.precio}
-                moneda={propiedad.moneda}
-                ubicacion={propiedad.ubicacion}
-                descripcion={propiedad.descripcion}
-                imagen={propiedad.imagen}
+    <main className="properties-page">
+      <div className="properties-shell">
+        <section className="properties-hero">
+          <div className="properties-hero-copy">
+            <span className="properties-eyebrow">
+              <Sparkles size={14} />
+              INNOVAPROP <span>/</span> PROPIEDADES
+            </span>
+            <h1>
+              Encontrá el lugar
+              <span>que se siente como tuyo.</span>
+            </h1>
+            <p>
+              Casas, departamentos y espacios únicos en Tucumán. Explorá con
+              calma; tu próximo capítulo puede empezar acá.
+            </p>
+            <div className="properties-hero-actions">
+              <a className="properties-primary-link" href="#catalogo">
+                Explorar propiedades <ArrowDown size={17} />
+              </a>
+              <Link className="properties-secondary-link" to="/contacto">
+                Hablemos de lo que buscás
+              </Link>
+            </div>
+          </div>
+
+          <aside className="properties-hero-card">
+            <div className="properties-hero-card-icon">
+              <House size={22} />
+            </div>
+            <span className="properties-hero-card-label">TU PRÓXIMO HOGAR</span>
+            <h2>Un buen lugar cambia todo.</h2>
+            <p>
+              Te acompañamos para encontrar una propiedad que encaje con tu
+              vida y tus planes.
+            </p>
+            <div className="properties-hero-card-location">
+              <MapPin size={16} />
+              Tucumán, Argentina
+            </div>
+          </aside>
+
+          <div className="properties-hero-decoration" aria-hidden="true" />
+        </section>
+
+        <section className="properties-summary" aria-label="Resumen del catálogo">
+          <div className="properties-summary-item">
+            <span className="properties-summary-icon">
+              <Building2 size={18} />
+            </span>
+            <div>
+              <strong>{loading ? "—" : propiedades.length}</strong>
+              <span>propiedades en catálogo</span>
+            </div>
+          </div>
+          <div className="properties-summary-divider" />
+          <div className="properties-summary-item">
+            <span className="properties-summary-dot properties-dot-sale" />
+            <div>
+              <strong>{loading ? "—" : ventasCount}</strong>
+              <span>en venta</span>
+            </div>
+          </div>
+          <div className="properties-summary-divider" />
+          <div className="properties-summary-item">
+            <span className="properties-summary-dot properties-dot-rent" />
+            <div>
+              <strong>{loading ? "—" : alquileresCount}</strong>
+              <span>en alquiler</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="properties-catalog" id="catalogo">
+          <header className="properties-section-heading">
+            <div>
+              <span className="properties-section-kicker">ENCONTRÁ TU LUGAR</span>
+              <h2>Propiedades para vos</h2>
+              <p>Elegí los filtros y descubrí opciones que van con tus planes.</p>
+            </div>
+            <span className="properties-result-count">
+              {loading ? "Cargando..." : `${propiedadesFiltradas.length} opciones`}
+            </span>
+          </header>
+
+          <div className="properties-filters">
+            <label className="properties-search">
+              <Search size={19} aria-hidden="true" />
+              <input
+                type="search"
+                placeholder="Buscar por nombre o ubicación"
+                value={busqueda}
+                onChange={(event) => {
+                  setBusqueda(event.target.value);
+                  setPaginaActual(1);
+                }}
+                aria-label="Buscar propiedades por nombre o ubicación"
               />
-            </Col>
-          ))}
-        </Row>
+            </label>
 
-        {/* Controles de Paginación con diseño CSS externo */}
-        <div className="pagination-container">
-          <button
-            className="pagination-btn"
-            onClick={paginaAnterior}
-            disabled={paginaActual === 1}
-          >
-            Anterior
-          </button>
+            <label className="properties-select">
+              <span>Tipo</span>
+              <select
+                value={tipoSeleccionado}
+                onChange={(event) => {
+                  setTipoSeleccionado(event.target.value);
+                  setPaginaActual(1);
+                }}
+                aria-label="Filtrar por tipo de propiedad"
+              >
+                <option value="">Todos los tipos</option>
+                {tipos.map((tipo) => (
+                  <option key={tipo} value={tipo}>
+                    {tipo}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <span className="pagination-info">
-            Página {paginaActual} de {totalPaginas}
-          </span>
+            <label className="properties-select">
+              <span>Operación</span>
+              <select
+                value={operacionSeleccionada}
+                onChange={(event) => {
+                  setOperacionSeleccionada(event.target.value);
+                  setPaginaActual(1);
+                }}
+                aria-label="Filtrar por operación"
+              >
+                <option value="">Venta y alquiler</option>
+                <option value="Venta">Venta</option>
+                <option value="Alquiler">Alquiler</option>
+              </select>
+            </label>
 
-          <button
-            className="pagination-btn"
-            onClick={siguientePagina}
-            disabled={paginaActual === totalPaginas}
-          >
-            Siguiente
-          </button>
-        </div>
-      </Container>
-    </div>
+            {hayFiltros && (
+              <button
+                className="properties-clear-filters"
+                type="button"
+                onClick={limpiarFiltros}
+              >
+                Limpiar
+              </button>
+            )}
+          </div>
+
+          {error ? (
+            <div className="properties-feedback properties-error" role="alert">
+              <span>{error}</span>
+              <Link to="/contacto">Contactar con nosotros</Link>
+            </div>
+          ) : loading ? (
+            <div className="properties-feedback" role="status">
+              <span className="properties-loader" />
+              <span>Estamos preparando las propiedades para vos...</span>
+            </div>
+          ) : propiedadesVisibles.length > 0 ? (
+            <>
+              <div className="properties-grid">
+                {propiedadesVisibles.map((propiedad) => (
+                  <div
+                    className="properties-grid-item"
+                    key={propiedad.id}
+                  >
+                    <Cards
+                      id={propiedad.id}
+                      titulo={propiedad.titulo}
+                      tipo={propiedad.tipo}
+                      operacion={propiedad.operacion}
+                      precio={propiedad.precio}
+                      moneda={propiedad.moneda}
+                      ubicacion={propiedad.ubicacion}
+                      descripcion={propiedad.descripcion}
+                      imagen={propiedad.imagen}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {totalPaginas > 1 && (
+                <nav className="pagination-container" aria-label="Paginación">
+                  <button
+                    className="pagination-btn"
+                    type="button"
+                    onClick={() => setPaginaActual(paginaActual - 1)}
+                    disabled={paginaActual === 1}
+                  >
+                    <ArrowLeft size={17} />
+                    Anterior
+                  </button>
+                  <span className="pagination-info">
+                    Página <strong>{paginaActual}</strong> de {paginasMostradas}
+                  </span>
+                  <button
+                    className="pagination-btn"
+                    type="button"
+                    onClick={() => setPaginaActual(paginaActual + 1)}
+                    disabled={paginaActual === totalPaginas}
+                  >
+                    Siguiente
+                    <ArrowRight size={17} />
+                  </button>
+                </nav>
+              )}
+            </>
+          ) : (
+            <div className="properties-empty">
+              <span className="properties-empty-icon">
+                <Search size={25} />
+              </span>
+              <h3>No encontramos propiedades con esos filtros</h3>
+              <p>Probá con otra búsqueda o quitá alguno de los filtros.</p>
+              {hayFiltros && (
+                <button
+                  className="properties-primary-link"
+                  type="button"
+                  onClick={limpiarFiltros}
+                >
+                  Ver todas las propiedades
+                </button>
+              )}
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
   );
 };
 
